@@ -1,0 +1,6 @@
+client/dist/bundle.js
+node_modules/
+.env
+.babelrc
+.npmrc
+.prettierrc
