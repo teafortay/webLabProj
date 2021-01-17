@@ -4,8 +4,7 @@ import GoogleLogin, { GoogleLogout } from "react-google-login";
 import "../../utilities.css";
 import "./Skeleton.css";
 
-//TODO: REPLACE WITH YOUR OWN CLIENT_ID
-const GOOGLE_CLIENT_ID = "121479668229-t5j82jrbi9oejh7c8avada226s75bopn.apps.googleusercontent.com";
+const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
 
 class Skeleton extends Component {
   constructor(props) {
@@ -23,14 +22,14 @@ class Skeleton extends Component {
       <>
         {this.props.userId ? (
           <GoogleLogout
-            clientId={GOOGLE_CLIENT_ID}
+            clientId={CLIENT_ID}
             buttonText="Logout"
             onLogoutSuccess={this.props.handleLogout}
             onFailure={(err) => console.log(err)}
           />
         ) : (
           <GoogleLogin
-            clientId={GOOGLE_CLIENT_ID}
+            clientId={CLIENT_ID}
             buttonText="Login"
             onSuccess={this.props.handleLogin}
             onFailure={(err) => console.log(err)}
