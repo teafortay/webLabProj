@@ -18,6 +18,7 @@ class App extends Component {
     super(props);
     this.state = {
       userId: undefined,
+      ueerName: undefined,
     };
   }
 
@@ -26,6 +27,7 @@ class App extends Component {
       if (user._id) {
         // they are registed in the database, and currently logged in.
         this.setState({ userId: user._id });
+        this.setState({userName: user.name});
       }
     });
   }
@@ -35,12 +37,14 @@ class App extends Component {
     const userToken = res.tokenObj.id_token;
     post("/api/login", { token: userToken }).then((user) => {
       this.setState({ userId: user._id });
+      this.setState({ userName: user.name});
       post("/api/initsocket", { socketid: socket.id });
     });
   };
 
   handleLogout = () => {
     this.setState({ userId: undefined });
+    this.setState({ userName: undefined});
     post("/api/logout");
   };
 
@@ -53,6 +57,7 @@ class App extends Component {
             handleLogin={this.handleLogin}
             handleLogout={this.handleLogout}
             userId={this.state.userId}
+            userName={this.state.userName}
           />
           <NotFound default />
         </Router>
