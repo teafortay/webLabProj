@@ -1,6 +1,28 @@
 import React, { Component } from "react";
 import GoogleLogin, { GoogleLogout } from "react-google-login";
 
+import Landing from "./Landing.js";
+import Game from "./Game.js";
+
+/*
+(
+      <>
+        {this.props.userId ? (
+          <GoogleLogout
+            clientId={GOOGLE_CLIENT_ID}
+            buttonText="Logout"
+            onLogoutSuccess={this.props.handleLogout}
+            onFailure={(err) => console.log(err)}
+          />
+        ) : (
+          <GoogleLogin
+            clientId={GOOGLE_CLIENT_ID}
+            buttonText="Login"
+            onSuccess={this.props.handleLogin}
+            onFailure={(err) => console.log(err)}
+          />
+        )}
+*/
 import "../../utilities.css";
 import "./Skeleton.css";
 
@@ -18,36 +40,7 @@ class Skeleton extends Component {
   }
 
   render() {
-    return (
-      <>
-        {this.props.userId ? (
-          <GoogleLogout
-            clientId={CLIENT_ID}
-            buttonText="Logout"
-            onLogoutSuccess={this.props.handleLogout}
-            onFailure={(err) => console.log(err)}
-          />
-        ) : (
-          <GoogleLogin
-            clientId={CLIENT_ID}
-            buttonText="Login"
-            onSuccess={this.props.handleLogin}
-            onFailure={(err) => console.log(err)}
-          />
-        )}
-
-        <p>user name: {this.props.userName}</p>
-        
-        
-        <h2> What you need to change</h2>
-        <ul>
-        
-          
-          <li>Do database stuff?</li>
-          <li>Add a favicon to your website at the path client/dist/favicon.ico??</li>
-        </ul>
-      </>
-    );
+    return <>{this.props.userId ? <Game /> : <Landing handleLogin={this.props.handleLogin} />}</>;
   }
 }
 
