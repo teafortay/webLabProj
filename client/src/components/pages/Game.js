@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import GoogleLogout from "react-google-login";
+import GoogleLogin, { GoogleLogout } from "react-google-login";
+
 import "./Game.css";
 
 const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";

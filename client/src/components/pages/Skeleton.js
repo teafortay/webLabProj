@@ -40,21 +40,19 @@ class Skeleton extends Component {
   }
 
   render() {
-      return
-      ( <>{this.props.userId ? (
-        <Game
-        handleLogout={this.handleLogout}
-        userId={this.state.userId}
-        userName={this.state.userName}
-       />
-       ) : (
-       <Landing 
-       handleLogin={this.props.handleLogin} 
-       />
-      )}
-      </>
-  
-)};
+    //console.log(this.props.userId)
+    if (this.props.userId) {
+      return (<Game
+        handleLogout={this.props.handleLogout}
+        userId={this.props.userId}
+        userName={this.props.userName}
+       />);
+      } else {
+        return (<Landing 
+          handleLogin={this.props.handleLogin} 
+          />);
+       }
+  }
 
 }
 

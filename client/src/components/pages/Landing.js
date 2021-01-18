@@ -23,7 +23,6 @@ class Landing extends Component {
           buttonText="Login"
           onSuccess={this.props.handleLogin}
           onFailure={(err) => console.log(err)}
-          theme="dark"
         />
 
         <h1>Good luck on your project :)</h1>
