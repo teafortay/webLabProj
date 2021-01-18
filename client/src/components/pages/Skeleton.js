@@ -26,7 +26,7 @@ import Game from "./Game.js";
 import "../../utilities.css";
 import "./Skeleton.css";
 
-const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
+//const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
 
 class Skeleton extends Component {
   constructor(props) {
@@ -40,8 +40,22 @@ class Skeleton extends Component {
   }
 
   render() {
-    return <>{this.props.userId ? <Game /> : <Landing handleLogin={this.props.handleLogin} />}</>;
-  }
+      return
+      ( <>{this.props.userId ? (
+        <Game
+        handleLogout={this.handleLogout}
+        userId={this.state.userId}
+        userName={this.state.userName}
+       />
+       ) : (
+       <Landing 
+       handleLogin={this.props.handleLogin} 
+       />
+      )}
+      </>
+  
+)};
+
 }
 
 export default Skeleton;
