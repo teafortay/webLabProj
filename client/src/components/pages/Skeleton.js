@@ -37,20 +37,12 @@ class Skeleton extends Component {
         )}
 
         <p>user name: {this.props.userName}</p>
-        <h1>Good luck on your project :)</h1>
-        <h2> What we provide in this skeleton</h2>
-        <ul>
-          <li>Google Auth (Skeleton.js & auth.js)</li>
-          <li>Socket Infrastructure (client-socket.js & server-socket.js)</li>
-          <li>User Model (auth.js & user.js)</li>
-        </ul>
-
+        
         
         <h2> What you need to change</h2>
         <ul>
         
-          <li>Fix logIn/ logOut</li>
-          <li>Fix socket error</li>
+          
           <li>Do database stuff?</li>
           <li>Add a favicon to your website at the path client/dist/favicon.ico??</li>
         </ul>
