@@ -25,7 +25,7 @@ class Game extends Component {
             onLogoutSuccess={this.props.handleLogout}
             onFailure={(err) => console.log(err)}
           />
-    <p>user name: {this.props.userName}</p>
+    <p>Player {this.props.userName} has $2500</p>
     </>
 
 

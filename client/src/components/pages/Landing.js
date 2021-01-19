@@ -25,15 +25,9 @@ class Landing extends Component {
           onFailure={(err) => console.log(err)}
         />
 
-        <h1>Good luck on your project :)</h1>
-        <h2> What we provide in this skeleton</h2>
-        <ul>
-          <li>Google Auth (Skeleton.js & auth.js)</li>
-          <li>Socket Infrastructure (client-socket.js & server-socket.js)</li>
-          <li>User Model (auth.js & user.js)</li>
-        </ul>
-
-        
+        <h1>Welcome to MITopoly!</h1>
+        <h2>A Monopoly-like game for MIT!</h2>
+      
         <h2> What you need to change</h2>
         <ul>
         
