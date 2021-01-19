@@ -43,7 +43,7 @@ class App extends Component {
   };
 
   handleLogout = () => {
-    console.log(`${res.profileObj.name} just looged out`);
+    console.log("just looged out");
     this.setState({ userId: undefined });
     this.setState({ userName: undefined});
     post("/api/logout");
