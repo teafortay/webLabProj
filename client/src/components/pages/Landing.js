@@ -28,12 +28,11 @@ class Landing extends Component {
         <h1>Welcome to MITopoly!</h1>
         <h2>A Monopoly-like game for MIT!</h2>
       
-        <h2> What you need to change</h2>
+        <h2> How does this work?</h2>
         <ul>
-        
-          <li>Fix logIn/ logOut</li>
-          <li>Fix socket error</li>
-          <li>Do database stuff?</li>
+          <li>Log in to play MITopoly with friends!</li>
+          <li>Invite friends!</li>
+          <li>Enjoy!</li>
         </ul>
       </>
     );
