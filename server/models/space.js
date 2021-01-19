@@ -2,8 +2,9 @@ const mongoose = require("mongoose");
 
 const SpaceSchema = new mongoose.Schema({
   name: String,
+  canOwn: Boolean,
   owner: String,
-  price_per_hotel: Number,
+  pricePerBooth: Number,
   color: String,
 
 });

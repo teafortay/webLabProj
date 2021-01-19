@@ -42,6 +42,31 @@ router.post("/initsocket", (req, res) => {
 // | write your API methods below!|
 // |------------------------------|
 
+const board = {
+  spaces: [
+    {
+    name: "GO",
+    canOwn: false,
+    owner: "none",
+    }, {
+      name: "Student Center",
+      canOwn: true,
+      owner: "Taylor Shaw",
+      pricePerBooth: 100,
+      color: "orange",
+    }, {
+      name: "Lobby 10",
+      canOwn: true,
+      owner: "MIT",
+      pricePerBooth: 150,
+      color: "blue",
+    }
+  ]
+};
+
+router.get("/board", (req, res) => {
+  res.send(board.spaces);
+});
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {
   console.log(`API route not found: ${req.method} ${req.url}`);
