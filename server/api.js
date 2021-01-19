@@ -47,7 +47,6 @@ const board = {
     {
     name: "GO",
     canOwn: false,
-    owner: "none",
     }, {
       name: "Student Center",
       canOwn: true,
