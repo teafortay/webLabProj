@@ -34,7 +34,6 @@ class Landing extends Component {
           <li>Fix logIn/ logOut</li>
           <li>Fix socket error</li>
           <li>Do database stuff?</li>
-          <li>Add a favicon to your website at the path client/dist/favicon.ico??</li>
         </ul>
       </>
     );
