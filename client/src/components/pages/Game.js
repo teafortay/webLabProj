@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import GoogleLogin, { GoogleLogout } from "react-google-login";
+import { get } from "../../utilities";
 
 import "./Game.css";
 
@@ -9,24 +10,35 @@ class Game extends Component {
   constructor(props) {
     super(props);
     // Initialize Default State
-    this.state = {};
+    this.state = {
+      spaces: [],
+    }
   }
 
   componentDidMount() {
     // remember -- api calls go here!
+    get("/api/board").then((spaceObjs) => {
+      this.setState({spaces: spaceObjs});
+    });
   }
 
   render() {
     return (
-        <>
+      <>
         <GoogleLogout
             clientId={CLIENT_ID}
             buttonText="Logout"
             onLogoutSuccess={this.props.handleLogout}
             onFailure={(err) => console.log(err)}
           />
-    <p>Player {this.props.userName} has $2500</p>
-    </>
+        <p>
+          Player {this.props.userName} has $2500
+        </p>
+
+        <p>
+          {JSON.stringify(this.state.spaces)}
+        </p>
+      </>
 
 
     );
