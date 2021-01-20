@@ -3,6 +3,9 @@ import GoogleLogin, { GoogleLogout } from "react-google-login";
 import { get } from "../../utilities";
 
 import "./Game.css";
+import "./Profile.css";
+import CatHappiness from "../modules/CatHappiness.js";
+
 
 const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
 
@@ -12,6 +15,7 @@ class Game extends Component {
     // Initialize Default State
     this.state = {
       spaces: [],
+      catHappiness: 0,
     }
   }
 
@@ -21,6 +25,19 @@ class Game extends Component {
       this.setState({spaces: spaceObjs});
     });
   }
+
+  roll_dice = () => {
+    const rand = Math.random();
+    const diceRoll = (Math.floor(rand * 11) + 2);
+    return diceRoll;
+  };
+
+  incrementCatHappiness = () => {
+    this.setState({
+      catHappiness: this.roll_dice(),
+    });
+  };
+
 
   render() {
     return (
@@ -38,6 +55,25 @@ class Game extends Component {
         <p>
           {JSON.stringify(this.state.spaces)}
         </p>
+
+        <div
+          className="Profile-avatarContainer"
+          onClick={() => {
+            this.incrementCatHappiness();
+          }}
+        >
+          <div className="Profile-avatar" />
+        </div>
+        <div className="u-flex">
+          <div className="Profile-subContainer u-textCenter">
+          </div>
+          <div className="Profile-subContainer u-textCenter">
+            <h4 className="Profile-subTitle">You rolled:</h4>
+            <CatHappiness catHappiness={this.state.catHappiness} />
+          </div>
+          <div className="Profile-subContainer u-textCenter">
+          </div>
+        </div>
       </>
 
 
