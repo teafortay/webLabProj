@@ -52,12 +52,14 @@ const board = {
       canOwn: true,
       owner: "Taylor Shaw",
       pricePerBooth: 100,
+      rentPerBooth: 10,
       color: "orange",
     }, {
       name: "Lobby 10",
       canOwn: true,
       owner: "MIT",
       pricePerBooth: 150,
+      rentPerBooth: 15,
       color: "blue",
     }
   ]
