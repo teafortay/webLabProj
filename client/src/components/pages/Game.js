@@ -35,28 +35,19 @@ class Game extends Component {
     return diceRoll;
   };
 
-  incrementCatHappiness = () => {
-    this.setState({
-      catHappiness: this.rollDice(),
-    });
-  };
-
   movePlayer =() => {
-    const playerLoc = this.state.catHappiness;
-    this.incrementCatHappiness();
-    const newLoc = playerLoc + this.state.catHappiness;
+    const playerLoc = this.state.playerLocation;
+    const diceRollResult = this.rollDice();
+    let newLoc = playerLoc + diceRollResult;
     const boardLength = this.state.spaces.length;
-    if (newLoc > boardLength) {
-        this.setState({
-          playerLocation: (newLoc - boardLength),
-        }); 
-    } else {
-      this.setState({
-        playerLocation: newLoc
+    if (newLoc >= boardLength) {
+      newLoc -= boardLength;
+    }
+    this.setState({
+      playerLocation: newLoc,
+      catHappiness: diceRollResult,
     });
   };
-};
-
 
   render() {
     return (
@@ -68,7 +59,7 @@ class Game extends Component {
             onFailure={(err) => console.log(err)}
           />
 
-        <div>
+        <div className="Game-margin">
           {this.state.spaces.map((space) => (
             <SingleSpace
             key={`SingleSpace_${space._id}`}
@@ -113,7 +104,7 @@ class Game extends Component {
               .map((s) =>
               <SingleSpace
               key={`SingleSpace_${s._id}`}
-            id = {s._id}
+              id = {s._id}
               name={s.name}
               color={s.color}
               owner={s.owner}
