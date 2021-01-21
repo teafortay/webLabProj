@@ -60,6 +60,8 @@ class Game extends Component {
             key={`SingleSpace_${space._id}`}
               name={space.name}
               color={space.color}
+              owner={space.owner}
+              numberOfBooths={space.numberOfBooths}
             />
           ))}
         </div>

@@ -6,6 +6,7 @@ const SpaceSchema = new mongoose.Schema({
   owner: String,
   pricePerBooth: Number,
   rentPerBooth: Number,
+  numberOfBooths: Number,
   color: String,
 
 });
