@@ -70,6 +70,7 @@ class Game extends Component {
           {this.state.spaces.map((space) => (
             <SingleSpace
             key={`SingleSpace_${space._id}`}
+            id = {space._id}
               name={space.name}
               color={space.color}
               owner={space.owner}
@@ -106,8 +107,18 @@ class Game extends Component {
           </div>
           <div className="Profile-subContainer u-textCenter">
             <h4 className="Profile-subTitle">Your current location:</h4>
-            <div id="favorite-cat">{this.state.spaces.filter((space) => (
-              space._id=this.state.catHappiness))}</div>
+            <div id="favorite-cat">{this.state.spaces.filter(s => s._id === this.state.catHappiness)
+              .map((s) =>
+              <SingleSpace
+              key={`SingleSpace_${s._id}`}
+            id = {s._id}
+              name={s.name}
+              color={s.color}
+              owner={s.owner}
+              numberOfBooths={s.numberOfBooths}
+            />
+          )}
+              </div>
           </div>
         </div>
       </>
