@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import "./CatHappiness.css";
+import "./Dice.css";
 
 /**
  * Component that renders cat happiness
@@ -7,7 +7,7 @@ import "./CatHappiness.css";
  * Proptypes
  * @param {int} catHappiness is how happy your cat is
  */
-class CatHappiness extends Component {
+class Dice extends Component {
   constructor(props) {
     super(props);
   }
@@ -16,13 +16,13 @@ class CatHappiness extends Component {
 
   render() {
     return (
-      <div className="CatHappiness-container">
-        <div className="CatHappiness-story">
-          <p className="CatHappiness-storyContent">{this.props.catHappiness}</p>
+      <div className="Dice-container">
+        <div className="Dice-story">
+          <p className="Dice-storyContent">{this.props.dice}</p>
         </div>
       </div>
     );
   }
 }
 
-export default CatHappiness;
+export default Dice;

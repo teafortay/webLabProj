@@ -6,7 +6,7 @@ import { get } from "../../utilities";
 
 import "./Game.css";
 import "./Profile.css";
-import CatHappiness from "../modules/CatHappiness.js";
+import Dice from "../modules/Dice.js";
 
 
 const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
@@ -17,7 +17,7 @@ class Game extends Component {
     // Initialize Default State
     this.state = {
       spaces: [],
-      catHappiness: 0,
+      dice: 0,
       playerLocation: 0,
     }
   }
@@ -45,7 +45,7 @@ class Game extends Component {
     }
     this.setState({
       playerLocation: newLoc,
-      catHappiness: diceRollResult,
+      dice: diceRollResult,
     });
   };
 
@@ -96,7 +96,7 @@ class Game extends Component {
           </div>
           <div className="Profile-subContainer u-textCenter">
             <h4 className="Profile-subTitle">You rolled:</h4>
-            <CatHappiness catHappiness={this.state.catHappiness} />
+            <Dice dice={this.state.dice} />
           </div>
           <div className="Profile-subContainer u-textCenter">
             <h4 className="Profile-subTitle">Your current location:</h4>
