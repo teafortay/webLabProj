@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import GoogleLogin, { GoogleLogout } from "react-google-login";
+import SingleSpace from "../modules/SingleSpace.js";
+
 import { get } from "../../utilities";
 
 import "./Game.css";
@@ -52,9 +54,15 @@ class Game extends Component {
           Player {this.props.userName} has $2500
         </p>
 
-        <p>
-          {JSON.stringify(this.state.spaces)}
-        </p>
+        <div>
+          {this.state.spaces.map((space) => (
+            <SingleSpace
+            key={`SingleSpace_${space._id}`}
+              name={space.name}
+              color={space.color}
+            />
+          ))}
+        </div>
 
         <div
           className="Profile-avatarContainer"

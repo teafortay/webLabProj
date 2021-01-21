@@ -45,9 +45,11 @@ router.post("/initsocket", (req, res) => {
 const board = {
   spaces: [
     {
-    name: "GO",
-    canOwn: false,
+      _id: 0,
+      name: "GO",
+      canOwn: false,
     }, {
+      _id: 1,
       name: "Student Center",
       canOwn: true,
       owner: "Taylor Shaw",
@@ -55,6 +57,7 @@ const board = {
       rentPerBooth: 10,
       color: "orange",
     }, {
+      _id: 2,
       name: "Lobby 10",
       canOwn: true,
       owner: "MIT",
