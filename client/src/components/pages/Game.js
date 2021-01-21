@@ -18,6 +18,7 @@ class Game extends Component {
     this.state = {
       spaces: [],
       catHappiness: 0,
+      playerLocation: 0,
     }
   }
 
@@ -28,7 +29,7 @@ class Game extends Component {
     });
   }
 
-  roll_dice = () => {
+  rollDice = () => {
     const rand = Math.random();
     const diceRoll = (Math.floor(rand * 11) + 2);
     return diceRoll;
@@ -36,9 +37,23 @@ class Game extends Component {
 
   incrementCatHappiness = () => {
     this.setState({
-      catHappiness: this.roll_dice(),
+      catHappiness: this.rollDice(),
     });
   };
+
+  movePlayer =() => {
+    const newLoc = playerLocation + catHappiness;
+    const boardLength = this.state.spaces.length;
+    if (newLoc > boardLength) {
+        this.setState({
+          playerLocation: (newLoc - boardLength),
+        }); 
+    } else {
+      this.setState({
+        playerLocation: newLoc
+    });
+  };
+};
 
 
   render() {
@@ -50,9 +65,6 @@ class Game extends Component {
             onLogoutSuccess={this.props.handleLogout}
             onFailure={(err) => console.log(err)}
           />
-        <p>
-          Player {this.props.userName} has $2500
-        </p>
 
         <div>
           {this.state.spaces.map((space) => (
@@ -74,14 +86,28 @@ class Game extends Component {
         >
           <div className="Profile-avatar" />
         </div>
+
+        <hr className="Profile-line" />
+
+        <h1 className="Profile-name u-textCenter">{this.props.userName}</h1>
+
+        <hr className="Profile-line" />
+
         <div className="u-flex">
           <div className="Profile-subContainer u-textCenter">
+            <h4 className="Profile-subTitle">Your game stats:</h4>
+            <div id="profile-description">
+              You currently own 1 property and have 1 booth on it. You currently have $2050.
+            </div>
           </div>
           <div className="Profile-subContainer u-textCenter">
             <h4 className="Profile-subTitle">You rolled:</h4>
             <CatHappiness catHappiness={this.state.catHappiness} />
           </div>
           <div className="Profile-subContainer u-textCenter">
+            <h4 className="Profile-subTitle">Your current location:</h4>
+            <div id="favorite-cat">{this.state.spaces.filter((space) => (
+              space._id=this.state.catHappiness))}</div>
           </div>
         </div>
       </>
