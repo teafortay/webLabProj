@@ -42,7 +42,9 @@ class Game extends Component {
   };
 
   movePlayer =() => {
-    const newLoc = playerLocation + catHappiness;
+    const playerLoc = this.state.catHappiness;
+    this.incrementCatHappiness();
+    const newLoc = playerLoc + this.state.catHappiness;
     const boardLength = this.state.spaces.length;
     if (newLoc > boardLength) {
         this.setState({
@@ -82,7 +84,7 @@ class Game extends Component {
         <div
           className="Profile-avatarContainer"
           onClick={() => {
-            this.incrementCatHappiness();
+            this.movePlayer();
           }}
         >
           <div className="Profile-avatar" />
@@ -107,7 +109,7 @@ class Game extends Component {
           </div>
           <div className="Profile-subContainer u-textCenter">
             <h4 className="Profile-subTitle">Your current location:</h4>
-            <div id="favorite-cat">{this.state.spaces.filter(s => s._id === this.state.catHappiness)
+            <div id="favorite-cat">{this.state.spaces.filter(s => s._id === this.state.playerLocation)
               .map((s) =>
               <SingleSpace
               key={`SingleSpace_${s._id}`}
