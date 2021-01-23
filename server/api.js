@@ -11,6 +11,8 @@ const express = require("express");
 
 // import models so we can interact with the database
 const User = require("./models/user");
+const Player = require("./models/player");
+const Space = require("./models/space");
 
 // import authentication library
 const auth = require("./auth");
@@ -20,6 +22,7 @@ const router = express.Router();
 
 //initialize socket
 const socketManager = require("./server-socket");
+//const { forEach } = require("core-js/fn/array");
 
 router.post("/login", auth.login);
 router.post("/logout", auth.logout);
@@ -142,10 +145,10 @@ const board = {
       _id: 11,
       name: "Senior House",
       canOwn: true,
-      owner: "Sara Falcone",
+      owner: "MIT",
       pricePerBooth: 125,
       rentPerBooth: 15,
-      numberOfBooths: 1,
+      numberOfBooths: 0,
       color: "green",
     }, {
       _id: 12,
@@ -161,8 +164,18 @@ const board = {
 };
 
 router.get("/board", (req, res) => {
-  res.send(board.spaces);
+  Space.find({}).then((dBSpaces) => {
+    board.spaces.forEach((s) => {
+      const dBSpace = dBSpaces.find((dBs) => dBs.name === s.name);
+      if (dBSpace) {
+        s.owner = dBSpace.owner;
+        s.numberOfBooths = dBSpace.numberOfBooths;
+      }
+    });
+    res.send(board.spaces);
+  });
 });
+
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {
   console.log(`API route not found: ${req.method} ${req.url}`);
