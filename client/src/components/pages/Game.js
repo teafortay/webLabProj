@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import GoogleLogin, { GoogleLogout } from "react-google-login";
+import Board from "../modules/Board.js";
 import SingleSpace from "../modules/SingleSpace.js";
 
 import { get } from "../../utilities";
@@ -19,7 +20,7 @@ class Game extends Component {
     this.state = {
       spaces: [],
       dice: 0,
-
+      playerName: this.props.userName,
       playerMoney: 0,
       playerProperties: [],
       playerLocation: 0,
@@ -62,7 +63,19 @@ class Game extends Component {
       dice: diceRollResult,
     });
   };
-
+/*
+  buyProperty = (playerObj, spaceObj) => {
+    if (spaceObj.owner !== BANK) {
+      return "PlayerObj.owner already owns this property"
+    } else if (playerObj.money < spaceObj.cost) {
+      return "Sorry, you don't have enough money"
+    }
+    this.setState({
+      spaceObj.owner: playerObj.name,
+      playerObj.money: playerObj.money - spaceObj.cost
+    });
+  };
+*/
   render() {
     return (
       <>
@@ -73,18 +86,10 @@ class Game extends Component {
             onFailure={(err) => console.log(err)}
           />
 
-        <div className="Game-margin">
-          {this.state.spaces.map((space) => (
-            <SingleSpace
-            key={`SingleSpace_${space._id}`}
-            id = {space._id}
-              name={space.name}
-              color={space.color}
-              owner={space.owner}
-              numberOfBooths={space.numberOfBooths}
-              rentPerBooth={space.rentPerBooth}
-            />
-          ))}
+        <div>
+          <Board
+          spaces={this.state.spaces}
+          />
         </div>
 
         <div
@@ -98,7 +103,7 @@ class Game extends Component {
 
         <hr className="Profile-line" />
 
-        <h2 className="Profile-name u-textCenter">{this.props.userName}</h2>
+        <h2 className="Profile-name u-textCenter">{this.state.playerName}</h2>
 
         <hr className="Profile-line" />
 

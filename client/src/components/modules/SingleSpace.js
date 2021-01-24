@@ -17,14 +17,22 @@ class SingleSpace extends Component {
     }
   
     render() {
-      return (
-        <div>
-          <span>{this.props.id + ". "}</span>
-          <span style={{color: this.props.color}}>{this.props.name}</span>
-          <span>{" | owned by: " + this.props.owner}</span>
-          <span>{" | number of booths: " + this.props.numberOfBooths}</span>
-        </div>
-      );
+      if (this.props.canOwn) {
+        return (
+          <div>
+            <span>{this.props.id + ". "}</span>
+            <span style={{color: this.props.color}}>{this.props.name}</span>
+            <span>{" | owned by: " + this.props.owner}</span>
+            <span>{" | rent: " + this.props.numberOfBooths * this.props.rentPerBooth}</span>
+          </div>);
+      } else {
+        return (
+          <div>
+            <span>{this.props.id + ". "}</span>
+            <span style={{color: this.props.color}}>{this.props.name}</span>
+          </div>);
+      }
+      
     }
   }
   
