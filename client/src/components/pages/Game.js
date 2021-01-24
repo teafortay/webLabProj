@@ -7,6 +7,7 @@ import { get } from "../../utilities";
 import "./Game.css";
 import "./Profile.css";
 import Dice from "../modules/Dice.js";
+//import player from "../../../../server/models/player.js";
 
 
 const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
@@ -18,7 +19,11 @@ class Game extends Component {
     this.state = {
       spaces: [],
       dice: 0,
+
+      playerMoney: 0,
+      playerProperties: [],
       playerLocation: 0,
+      
     }
   }
 
@@ -27,8 +32,17 @@ class Game extends Component {
     get("/api/board").then((spaceObjs) => {
       this.setState({spaces: spaceObjs});
     });
+
+    get("api/player").then((playerObj) => {
+      this.setState({
+        playerMoney: playerObj.money,
+        playerProperties: playerObj.properties,
+        playerLocation: playerObj.location,
+      });
+    });
   }
 
+  //move to logic file in server
   rollDice = () => {
     const rand = Math.random();
     const diceRoll = (Math.floor(rand * 11) + 2);
@@ -68,6 +82,7 @@ class Game extends Component {
               color={space.color}
               owner={space.owner}
               numberOfBooths={space.numberOfBooths}
+              rentPerBooth={space.rentPerBooth}
             />
           ))}
         </div>
@@ -83,7 +98,7 @@ class Game extends Component {
 
         <hr className="Profile-line" />
 
-        <h1 className="Profile-name u-textCenter">{this.props.userName}</h1>
+        <h2 className="Profile-name u-textCenter">{this.props.userName}</h2>
 
         <hr className="Profile-line" />
 
@@ -91,7 +106,8 @@ class Game extends Component {
           <div className="Profile-subContainer u-textCenter">
             <h4 className="Profile-subTitle">Your game stats:</h4>
             <div id="profile-description">
-              You currently own 1 property and have 1 booth on it. You currently have $2050.
+              <p>You currently own:{this.state.playerProperties}</p>
+              <p>You currenty have: ${this.state.playerMoney}</p>
             </div>
           </div>
           <div className="Profile-subContainer u-textCenter">

@@ -47,6 +47,11 @@ router.post("/initsocket", (req, res) => {
 // |------------------------------|
 
 const board = staticSpaces.board;
+const player = {
+  money: 2500,
+  properties: [],
+  location: 0,
+};
 
 router.get("/board", (req, res) => {
   Space.find({}).then((dBSpaces) => {
@@ -61,10 +66,16 @@ router.get("/board", (req, res) => {
   });
 });
 
+router.get("/player", (req, res) => {
+  res.send(player)
+});
+
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {
   console.log(`API route not found: ${req.method} ${req.url}`);
   res.status(404).send({ msg: "API route not found" });
 });
+
+
 
 module.exports = router;

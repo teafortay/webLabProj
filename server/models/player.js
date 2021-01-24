@@ -5,7 +5,7 @@ const PlayerSchema = new mongoose.Schema({
   googleid: String,
   money: Number,
   properties: Array, //list of space objects
-  position: Number,
+  location: Number,
 });
 
 // compile model from schema
