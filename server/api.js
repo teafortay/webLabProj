@@ -70,7 +70,6 @@ router.get("/board", (req, res) => {
 router.get("/player", (req, res) => {
   Player.find({googleid:req.query.googleid}).then((players) => {
     if (players.length === 0) {
-      console.log("name: " + req.query.name);
       const newPlayer = new Player({
         googleid: req.query.googleid,
         name: req.query.name,
@@ -81,8 +80,6 @@ router.get("/player", (req, res) => {
     } else {
       res.send(players[0])
     }
-    console.log("players: " + JSON.stringify(players));
-
   });
 });
 
