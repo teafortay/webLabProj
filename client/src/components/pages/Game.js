@@ -20,7 +20,6 @@ class Game extends Component {
     this.state = {
       spaces: [],
       dice: 0,
-      playerName: this.props.userName,
       playerMoney: 0,
       playerProperties: [],
       playerLocation: 0,
@@ -33,8 +32,9 @@ class Game extends Component {
     get("/api/board").then((spaceObjs) => {
       this.setState({spaces: spaceObjs});
     });
-
-    get("api/player").then((playerObj) => {
+    console.log("***" + this.props.userId);
+    get("api/player", {googleid:this.props.userId, name: this.props.userName})
+      .then((playerObj) => {
       this.setState({
         playerMoney: playerObj.money,
         playerProperties: playerObj.properties,

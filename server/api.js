@@ -23,6 +23,7 @@ const router = express.Router();
 
 //initialize socket
 const socketManager = require("./server-socket");
+const { query } = require("express");
 //const { forEach } = require("core-js/fn/array");
 
 router.post("/login", auth.login);
@@ -67,7 +68,22 @@ router.get("/board", (req, res) => {
 });
 
 router.get("/player", (req, res) => {
-  res.send(player)
+  Player.find({googleid:req.query.googleid}).then((players) => {
+    if (players.length === 0) {
+      console.log("name: " + req.query.name);
+      const newPlayer = new Player({
+        googleid: req.query.googleid,
+        name: req.query.name,
+        money: 2500,
+        location: 0,
+      });
+      newPlayer.save().then((player) => res.send(player));
+    } else {
+      res.send(players[0])
+    }
+    console.log("players: " + JSON.stringify(players));
+
+  });
 });
 
 // anything else falls to this "not found" case

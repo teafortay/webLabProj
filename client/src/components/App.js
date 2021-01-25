@@ -26,8 +26,10 @@ class App extends Component {
     get("/api/whoami").then((user) => {
       if (user._id) {
         // they are registed in the database, and currently logged in.
-        this.setState({ userId: user._id });
-        this.setState({userName: user.name});
+        this.setState({
+          userId: user._id,
+          userName: user.name
+        });
       }
     });
   }
@@ -36,16 +38,20 @@ class App extends Component {
     console.log(`Logged in as ${res.profileObj.name}`);
     const userToken = res.tokenObj.id_token;
     post("/api/login", { token: userToken }).then((user) => {
-      this.setState({ userId: user._id });
-      this.setState({ userName: user.name});
+      this.setState({
+        userId: user._id,
+        userName: user.name
+      });
       post("/api/initsocket", { socketid: socket.id });
     });
   };
 
   handleLogout = () => {
     console.log("just looged out");
-    this.setState({ userId: undefined });
-    this.setState({ userName: undefined});
+    this.setState({
+      userId: undefined,
+      userName: undefined
+    });
     post("/api/logout");
   };
 
