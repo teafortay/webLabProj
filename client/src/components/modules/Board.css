@@ -5,7 +5,7 @@
 /* Create two equal columns that floats next to each other */
 .Board-column {
     float: left;
-    width: 50%;
+    width: 48%;
     padding: 10px;
   }
 

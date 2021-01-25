@@ -103,7 +103,7 @@ class Game extends Component {
 
         <hr className="Profile-line" />
 
-        <h2 className="Profile-name u-textCenter">{this.state.playerName}</h2>
+        <h2 className="Profile-name u-textCenter">{this.props.userName}</h2>
 
         <hr className="Profile-line" />
 
