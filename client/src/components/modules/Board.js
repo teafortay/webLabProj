@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import SingleSpace from "./SingleSpace.js"
 import "./Board.css";
+import Column from "./Column.js";
 
 class Board extends Component {
     constructor(props) {
@@ -13,23 +14,18 @@ class Board extends Component {
     }
 
     render() {
-        return(
-            <div className="Board-margin">
-          {this.props.spaces.map((space) => (
-            <SingleSpace
-            key={`SingleSpace_${space._id}`}
-            id = {space._id}
-              name={space.name}
-              color={space.color}
-              owner={space.owner}
-              numberOfBooths={space.numberOfBooths}
-              rentPerBooth={space.rentPerBooth}
-              canOwn={space.canOwn}
-            />
-          ))}
+      const column1 = this.props.spaces.slice(0,20);
+      const column2 = this.props.spaces.slice(20);
+      return(
+        <div className="Board-row">
+          <div className="Board-column">
+            <Column spaces={column1} />
+          </div>
+          <div className="Board-column">
+            <Column spaces={column2} />
+          </div>
         </div>
-
-        );
+      );
     }
 
 
