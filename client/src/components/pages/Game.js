@@ -32,7 +32,7 @@ class Game extends Component {
     get("/api/board").then((spaceObjs) => {
       this.setState({spaces: spaceObjs});
     });
-    console.log("***" + this.props.userId);
+    
     get("api/player", {googleid:this.props.userId, name: this.props.userName})
       .then((playerObj) => {
       this.setState({
