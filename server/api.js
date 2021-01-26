@@ -169,30 +169,17 @@ router.post("/endTurn", auth.ensureLoggedIn, (req, res) => {
           });
           newSpace.save();
         } //TODO turns
-        player.save().then((p) => res.send(p));
+        player.save().then((p) => {
+          res.send(p);
+          incrementTurn();
+        });
       }); //space.find.then
     } else { ///if not bought property 
       res.send(player);
+      incrementTurn();
     }
   }); //player.find.then
-  //increment turn
-  Player.find({}).then((players) => {
-    for (let index = 0; index < players.length; index++) {
-      const player = players[index];
-      if (player.isTurn) {
-        player.isTurn = false;
-        player.save();
-        
-        let nextTurnIndex = index + 1;
-        if (nextTurnIndex >= players.length) {
-          nextTurnIndex = 0;
-        }
-        const nextPlayer = players[nextTurnIndex];
-        nextPlayer.isTurn = true;
-        nextPlayer.save();
-      } 
-    }
-  });
+  
 });//end of post
 
 // anything else falls to this "not found" case
@@ -201,6 +188,27 @@ router.all("*", (req, res) => {
   res.status(404).send({ msg: "API route not found" });
 });
 
-
+const incrementTurn = () => {
+  Player.find({}).then((players) => {
+    for (let index = 0; index < players.length; index++) {
+      const player = players[index];
+      if (player.isTurn) {
+        player.isTurn = false;
+        player.save().then((player) => {
+        
+          let nextTurnIndex = index + 1;
+          if (nextTurnIndex >= players.length) {
+            nextTurnIndex = 0;
+          }
+          const nextPlayer = players[nextTurnIndex];
+          nextPlayer.isTurn = true;
+          nextPlayer.save().then((nextPlayer) => {
+            socketManager.getIo().emit("newTurn", nextPlayer);
+          });
+        });
+      } 
+    }
+  });
+};
 
 module.exports = router;
