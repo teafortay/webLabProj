@@ -63,7 +63,7 @@ router.get("/board", (req, res) => {
         s.ownerId = dBSpace.ownerId;
         s.numberOfBooths = dBSpace.numberOfBooths;
       }
-    });
+    }); //TODO display who's on each space
     res.send(board.spaces);
   });
 });
@@ -74,12 +74,13 @@ router.get("/testMove", (req, res) => {
   console.log(JSON.stringify(newL));
   res.send(newL);
 });
-router.get("/player", (req, res) => {
-  Player.find({googleid:req.query.googleid}).then((players) => {
+
+router.get("/player", auth.ensureLoggedIn, (req, res) => {
+  Player.find({userId:req.user._id}).then((players) => {
     if (players.length === 0) {
       const newPlayer = new Player({
-        googleid: req.query.googleid,
-        name: req.query.name,
+        userId: req.user._id,
+        name: req.user.name,
         money: 2500,
         location: 0,
       });
@@ -90,9 +91,9 @@ router.get("/player", (req, res) => {
   });
 });
 
-router.get("/startTurn", (req, res) => {
-  //get player req.query.id
-  Player.find({googleid: req.query.googleid}).then((players) => {
+router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
+  //get player
+  Player.find({userId: req.user._id}).then((players) => {
     const player = players[0]; //TODO handle empty 
     const oldLoc = player.location;
     //roll dice, get new location- add GO money
@@ -107,43 +108,65 @@ router.get("/startTurn", (req, res) => {
         const dBSpace = dBSpaces[0];
         if (dBSpace.owner === BANK) {
           //buy
-          result.canBuy = true;
-        } else if (dBSpace.ownerId !== req.query.googleid) {
+          result.canBuy = true; //TODO player has enough money?
+        } else if (dBSpace.ownerId !== req.user._id) {
           result.paidRent = true;
-          //pay rent - update user money, update owner money
+          //pay rent - update user money
           const s = board.spaces.find((staticS) => dBSpace.space_id === staticS._id); //js find
           const rent = dBSpace.numberOfBooths * s.rentPerBooth;
-          player.money -= rent;
-          //TODO update owner money
+          player.money -= rent; //TODO player has enogh money
+          //update owner money
+          Player.find({userId: dBSpace.ownerId}).then((owners) => {
+            const owner = owners[0]; //TODO check nonempty
+            owner.money += rent;
+            owner.save(); //TODO notify owner client
+          });
         }
       } else {
         //space not found in database
-        result.canBuy = true;
+        result.canBuy = true; //TODO player has enough money?
       }
       //update database
       player.save().then((player) => {
-        result.player = player;
+        result.player = player; //display player bank
         res.send(result)
       })
     }); //space.find.then
   }); //player.find.then
 });
 
-router.post("/endTurn", (req, res) => {
-  //if req.body.buyProperty {
-    const player = req.body.playerObj;
-    const space = req.body.spaceObj;
-    if (req.body.boughtPropertu) {
+router.post("/endTurn", auth.ensureLoggedIn, (req, res) => {
+  Player.find({userId: req.user._id}).then((players) => {
+    const player = players[0];
+    //handle buying property
+    if (req.body.boughtProperty) { 
+      //TODO check player has enough money
+      const space = board.spaces.find((staticS) => player.location === staticS._id); //js find
       player.money -= space.cost;
-      space.numberOfBooths += 1;
-    };
-    //update database
-    turnIndex += 1;
-    //update space.owner, decrement player.money
-  //}
+      Space.find({space_id: space._id}).then((dBSpaces) => {
+        if (dBSpaces.length > 0) {
+          const dBSpace = dBSpaces[0];
+          dBSpace.ownerId = player.userId;
+          dBSpace.owner = player.name;
+          dBSpace.numberOfBooths =1;
+          dBSpace.save();
+        } else {
+          const newSpace = new Space({
+            space_id: space._id,
+            owner: player.name,
+            ownerId: player.userId,
+            numberOfBooths: 1,
+          });
+          newSpace.save();
+        } //TODO turns
+        player.save().then((p) => res.send(p));
+      }); //space.find.then
+    } else { ///if not bought property 
+      res.send(player);
+    }
+  }); //player.find.then
   //increment turn
-  //res.send(player)
-})
+});//end of post
 
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {
