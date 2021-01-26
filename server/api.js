@@ -78,13 +78,17 @@ router.get("/testMove", (req, res) => {
 router.get("/player", auth.ensureLoggedIn, (req, res) => {
   Player.find({userId:req.user._id}).then((players) => {
     if (players.length === 0) {
-      const newPlayer = new Player({
-        userId: req.user._id,
-        name: req.user.name,
-        money: 2500,
-        location: 0,
-      });
-      newPlayer.save().then((player) => res.send(player));
+      Player.find({}).then((allPlayers) => {
+        const turn = allPlayers.length > 0 ? false: true;
+        const newPlayer = new Player({
+          userId: req.user._id,
+          name: req.user.name,
+          money: 2500,
+          location: 0,
+          isTurn: turn,
+        });
+        newPlayer.save().then((player) => res.send(player));
+      })
     } else {
       res.send(players[0])
     }
@@ -95,6 +99,9 @@ router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
   //get player
   Player.find({userId: req.user._id}).then((players) => {
     const player = players[0]; //TODO handle empty 
+    if (!player.isTurn) {
+      return res.status(401).send({ err: "not your turn" });
+    }
     const oldLoc = player.location;
     //roll dice, get new location- add GO money
     const result = logic.movePlayer(oldLoc);
@@ -138,6 +145,9 @@ router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
 router.post("/endTurn", auth.ensureLoggedIn, (req, res) => {
   Player.find({userId: req.user._id}).then((players) => {
     const player = players[0];
+    if (!player.isTurn) {
+      return res.status(401).send({ err: "not your turn" });
+    }
     //handle buying property
     if (req.body.boughtProperty) { 
       //TODO check player has enough money
@@ -166,6 +176,23 @@ router.post("/endTurn", auth.ensureLoggedIn, (req, res) => {
     }
   }); //player.find.then
   //increment turn
+  Player.find({}).then((players) => {
+    for (let index = 0; index < players.length; index++) {
+      const player = players[index];
+      if (player.isTurn) {
+        player.isTurn = false;
+        player.save();
+        
+        let nextTurnIndex = index + 1;
+        if (nextTurnIndex >= players.length) {
+          nextTurnIndex = 0;
+        }
+        const nextPlayer = players[nextTurnIndex];
+        nextPlayer.isTurn = true;
+        nextPlayer.save();
+      } 
+    }
+  });
 });//end of post
 
 // anything else falls to this "not found" case

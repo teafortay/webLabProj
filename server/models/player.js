@@ -5,6 +5,7 @@ const PlayerSchema = new mongoose.Schema({
   userId: String,
   money: Number,
   location: Number,
+  isTurn: Boolean
 });
 
 // compile model from schema
