@@ -335,4 +335,9 @@ const board = {
     ]
   };
 
-  module.exports = {board};
+  module.exports = {
+    board,
+    BANK,
+    CHANCE,
+    COMMUNITY_CHEST,
+  };

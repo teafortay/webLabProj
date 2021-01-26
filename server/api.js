@@ -52,13 +52,15 @@ router.post("/initsocket", (req, res) => {
 // |------------------------------|
 
 const board = staticSpaces.board;
+const BANK = staticSpaces.BANK;
 
 router.get("/board", (req, res) => {
   Space.find({}).then((dBSpaces) => {
     board.spaces.forEach((s) => {
-      const dBSpace = dBSpaces.find((dBs) => dBs._id === s._id);
+      const dBSpace = dBSpaces.find((dBs) => dBs.space_id === s._id); //js find
       if (dBSpace) {
         s.owner = dBSpace.owner;
+        s.ownerId = dBSpace.ownerId;
         s.numberOfBooths = dBSpace.numberOfBooths;
       }
     });
@@ -66,6 +68,12 @@ router.get("/board", (req, res) => {
   });
 });
 
+router.get("/testMove", (req, res) => {
+  const loc = req.query.loc;
+  const newL = logic.movePlayer(loc);
+  console.log(JSON.stringify(newL));
+  res.send(newL);
+});
 router.get("/player", (req, res) => {
   Player.find({googleid:req.query.googleid}).then((players) => {
     if (players.length === 0) {
@@ -85,29 +93,40 @@ router.get("/player", (req, res) => {
 router.get("/startTurn", (req, res) => {
   //get player req.query.id
   Player.find({googleid: req.query.googleid}).then((players) => {
-    const player = players[0];
+    const player = players[0]; //TODO handle empty 
     const oldLoc = player.location;
-    [newLoc, dice, passGO] = logic.movePlayer(oldLoc);
-    if (passGO) {
+    //roll dice, get new location- add GO money
+    const result = logic.movePlayer(oldLoc);
+    player.location = result.newLoc;
+    if (result.passGO) {
       player.money += 200;
     };
-    Space.find({_id: newLoc}).then((spaces) => {
-      if (spaces) {
-        const space = spaces[0];
-        const rent = space.numberOfBooths * space.rentPerBooth; //value not in database
-        player.money -= rent;
-        space.owner.money += rent; //owner is playerObj?
-      };
-    });
-    //update database?
-    res.send([dice, newLoc, "you paid rent"])
-
-  });
-  //roll dice, get new location- add GO money
-  //query database for new location space
-  //pay rent - update user money, update owner money
-  //send back (diceRoll, new location, new money, message)
-
+    //query database for new location space
+    Space.find({space_id: result.newLoc}).then((dBSpaces) => {
+      if (dBSpaces.length > 0) {
+        const dBSpace = dBSpaces[0];
+        if (dBSpace.owner === BANK) {
+          //buy
+          result.canBuy = true;
+        } else if (dBSpace.ownerId !== req.query.googleid) {
+          result.paidRent = true;
+          //pay rent - update user money, update owner money
+          const s = board.spaces.find((staticS) => dBSpace.space_id === staticS._id); //js find
+          const rent = dBSpace.numberOfBooths * s.rentPerBooth;
+          player.money -= rent;
+          //TODO update owner money
+        }
+      } else {
+        //space not found in database
+        result.canBuy = true;
+      }
+      //update database
+      player.save().then((player) => {
+        result.player = player;
+        res.send(result)
+      })
+    }); //space.find.then
+  }); //player.find.then
 });
 
 router.post("/endTurn", (req, res) => {

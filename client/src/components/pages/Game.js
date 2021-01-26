@@ -41,6 +41,11 @@ class Game extends Component {
         playerLocation: playerObj.location,
       });
     });
+
+    get("api/startTurn", {googleid:this.props.userId})
+    .then((result) => {
+      console.log(JSON.stringify(result));
+    });
   }
 
   //move to logic file in server
@@ -48,6 +53,16 @@ class Game extends Component {
     const rand = Math.random();
     const diceRoll = (Math.floor(rand * 11) + 2);
     return diceRoll;
+  };
+
+  testMove = () => {
+    get("api/testMove", {loc: this.state.playerLocation})
+    .then((newLoc) => {
+      this.setState({
+        playerLocation: newLoc.newLoc,
+        dice: newLoc.dice
+      });
+    });
   };
 
   movePlayer =() => {
@@ -95,7 +110,7 @@ class Game extends Component {
         <div
           className="Profile-avatarContainer"
           onClick={() => {
-            this.movePlayer();
+            this.testMove();
           }}
         >
           <div className="Profile-avatar" />

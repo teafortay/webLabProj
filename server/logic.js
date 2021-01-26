@@ -3,26 +3,29 @@ game logic goes here
 */
 
 //move to logic file in server
-rollDice = () => {
+const rollDice = () => {
     const rand = Math.random();
     const diceRoll = (Math.floor(rand * 11) + 2);
+
     return diceRoll;
   };
 
-  movePlayer =(playerLoc) => {
-      let passGO = false;
-    const diceRollResult = this.rollDice();
-    let newLoc = playerLoc + diceRollResult;
+  const movePlayer =(playerLoc) => {
+    let passGO = false;
+    const diceRollResult = rollDice();
+    let newLoc = Number(playerLoc) + diceRollResult;
     const boardLength = 40; //not dynamic
     if (newLoc >= boardLength) {
       newLoc -= boardLength;
       passGO = true;
     }
-    return [
-    newLoc,
-      diceRollResult,
-      passGO,
-    ];
+    return {
+      newLoc: newLoc,
+      dice: diceRollResult,
+      passGO: passGO,
+      canBuy: false,
+      paidRent: false,
+    };
   };
 /*
   buyProperty = (playerObj, spaceObj) => {
@@ -37,3 +40,6 @@ rollDice = () => {
     });
   };
 */
+module.exports = {
+  movePlayer,
+}
