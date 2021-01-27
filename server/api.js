@@ -155,6 +155,9 @@ router.post("/endTurn", auth.ensureLoggedIn, (req, res) => {
     if (!player.isTurn) {
       return res.status(401).send({ err: "not your turn" });
     }
+    if (!player.didStartTurn) {
+      return res.status(401).send({ err: "Did not start turn" });
+    }
     player.isTurn = false;
     //handle buying property
     const space = board.spaces.find((staticS) => player.location === staticS._id); //js find
