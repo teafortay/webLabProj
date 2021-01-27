@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import GoogleLogin, { GoogleLogout } from "react-google-login";
 import Board from "../modules/Board.js";
 import SingleSpace from "../modules/SingleSpace.js";
+import { socket } from "../../client-socket.js";
 
 import { get, post } from "../../utilities";
 
@@ -38,6 +39,16 @@ class Game extends Component {
         playerMoney: playerObj.money,
         playerLocation: playerObj.location,
       });
+    });
+
+    socket.on("newTurn", (player) => {
+      console.log(">>> newTurn data:"+JSON.stringify(player));
+      // update board
+      get("/api/board").then((spaceObjs) => {
+        this.setState({spaces: spaceObjs});
+      });
+      // display whos turn it is
+      alert("It's now "+player.name+"'s turn.");
     });
   }
 
