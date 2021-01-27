@@ -23,6 +23,7 @@ class Game extends Component {
       dice: 0,
       playerMoney: 0,
       playerLocation: 0,
+      turnMessage: "",
       
     }
   }
@@ -45,7 +46,12 @@ class Game extends Component {
       this.updateBoard();
 
       //display who's turn it is
-      alert("it's now " + player.name + "'s turn.")
+      this.setState({
+        turnMessage: "it's now " + player.name + "'s turn.",
+      });
+      if (player.userId === this.props.userId) {
+        alert("it's now your turn!");
+      }
     });
   }
 
@@ -97,6 +103,8 @@ class Game extends Component {
           spaces={this.state.spaces}
           />
         </div>
+
+        <div>{this.state.turnMessage}</div>
 
         <div
           className="Profile-avatarContainer"
