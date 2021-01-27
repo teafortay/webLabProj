@@ -154,9 +154,10 @@ router.post("/endTurn", auth.ensureLoggedIn, (req, res) => {
       return res.status(401).send({ err: "not your turn" });
     }
     //handle buying property
-    if (req.body.boughtProperty) { 
+    const space = board.spaces.find((staticS) => player.location === staticS._id); //js find
+    if (space.canOwn && req.body.boughtProperty) { 
       //TODO check player has enough money
-      const space = board.spaces.find((staticS) => player.location === staticS._id); //js find
+      
       //check here
       player.money -= space.cost;
       Space.find({space_id: space._id}).then((dBSpaces) => {
