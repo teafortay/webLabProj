@@ -86,6 +86,7 @@ router.get("/player", auth.ensureLoggedIn, (req, res) => {
           money: 2500,
           location: 0,
           isTurn: turn,
+          didStartTurn: false,
         });
         newPlayer.save().then((player) => {
           res.send(player);
@@ -101,9 +102,10 @@ router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
   //get player
   Player.find({userId: req.user._id}).then((players) => {
     const player = players[0]; //TODO handle empty 
-    if (!player.isTurn) {
+    if (!player.isTurn || player.didStartTurn) {
       return res.status(401).send({ err: "not your turn" });
     }
+    player.didStartTurn = true;
     const oldLoc = player.location;
     //roll dice, get new location- add GO money
     const result = logic.movePlayer(oldLoc);
@@ -200,6 +202,7 @@ const incrementTurn = () => {
       const player = players[index];
       if (player.isTurn) {
         player.isTurn = false;
+        player.didStartTurn = false;
         player.save().then((player) => {
         
           let nextTurnIndex = index + 1;
