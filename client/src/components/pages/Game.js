@@ -56,11 +56,15 @@ class Game extends Component {
 
 
   endTurn(boughtProperty) {
+    
     console.log("*******");
     post("api/endTurn", {boughtProperty: boughtProperty})
     .then((player) => {
       this.setState({
         playerMoney: player.money
+      });
+      get("/api/board").then((spaceObjs) => {
+        this.setState({spaces: spaceObjs});
       });
       console.log(JSON.stringify(player));
     });
@@ -94,15 +98,15 @@ class Game extends Component {
         <button
           type="submit"
           value="Submit"
-          onClick={this.endTurn(true)}
+          onClick={() => {this.endTurn(true);}}
         >
-          Buy
+          Buy and End Turn
         </button>
 
         <button
           type="submit"
           value="Submit"
-          onClick={this.endTurn(false)}
+          onClick={() => {this.endTurn(false);}}
         >
           End Turn
         </button>

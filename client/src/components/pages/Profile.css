@@ -28,8 +28,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-   /* background-image: url("../../public/dice.png"); */
-    background-image: url("../../public/jonathan-petersson-a6N685qLsHQ-unsplash.jpg");
+    background-image: url("../../public/dice.png");
+    /*background-image: url("../../public/jonathan-petersson-a6N685qLsHQ-unsplash.jpg");*/
   }
   
   .Profile-name {
