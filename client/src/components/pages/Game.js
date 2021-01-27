@@ -29,9 +29,7 @@ class Game extends Component {
 
   componentDidMount() {
     // remember -- api calls go here!
-    get("/api/board").then((spaceObjs) => {
-      this.setState({spaces: spaceObjs});
-    });
+    this.updateBoard();
     
     get("api/player")
       .then((playerObj) => {
@@ -44,11 +42,16 @@ class Game extends Component {
     socket.on("newTurn", (player) => {
       console.log("^^^ newTurn data" + JSON.stringify(player));
       //update board
-      get("/api/board").then((spaceObjs) => {
-        this.setState({spaces: spaceObjs});
-      });
+      this.updateBoard();
+
       //display who's turn it is
       alert("it's now " + player.name + "'s turn.")
+    });
+  }
+
+  updateBoard() {
+    get("/api/board").then((spaceObjs) => {
+      this.setState({spaces: spaceObjs});
     });
   }
  
@@ -65,7 +68,6 @@ class Game extends Component {
     });
   }
 
-
   endTurn(boughtProperty) {
     
     console.log("*******");
@@ -74,9 +76,7 @@ class Game extends Component {
       this.setState({
         playerMoney: player.money
       });
-      get("/api/board").then((spaceObjs) => {
-        this.setState({spaces: spaceObjs});
-      });
+      this.updateBoard();
       console.log(JSON.stringify(player));
     });
     
