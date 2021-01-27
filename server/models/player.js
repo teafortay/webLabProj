@@ -6,6 +6,7 @@ const PlayerSchema = new mongoose.Schema({
   money: Number,
   location: Number,
   isTurn: Boolean,
+  didStartTurn: Boolean,
 });
 
 // compile model from schema
