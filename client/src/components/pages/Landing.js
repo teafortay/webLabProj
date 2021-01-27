@@ -26,7 +26,7 @@ class Landing extends Component {
         />
 
         <h1>Welcome to MITopoly!</h1>
-        <h2>A Monopoly-like game for MIT!</h2>
+        <h2>An infinite Monopoly-like game for MIT! Inspired by the infinite coorridor!</h2>
       
         <h2> How does this work?</h2>
         <h4>Log in to play MITopoly by yourself (Coming soon: with friends!)</h4>
