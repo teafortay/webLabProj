@@ -70,7 +70,7 @@ const board = {
           _id: 8,
         name: "Next House",
         canOwn: true,
-        onwner: BANK,
+        owner: BANK,
         pricePerBooth: 100,
         rentPerBooth: 10,
         numberOfBooths: 0,

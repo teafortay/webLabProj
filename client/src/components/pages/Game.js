@@ -3,7 +3,7 @@ import GoogleLogin, { GoogleLogout } from "react-google-login";
 import Board from "../modules/Board.js";
 import SingleSpace from "../modules/SingleSpace.js";
 
-import { get } from "../../utilities";
+import { get, post } from "../../utilities";
 
 import "./Game.css";
 import "./Profile.css";
@@ -21,7 +21,6 @@ class Game extends Component {
       spaces: [],
       dice: 0,
       playerMoney: 0,
-      playerProperties: [],
       playerLocation: 0,
       
     }
@@ -40,12 +39,32 @@ class Game extends Component {
         playerLocation: playerObj.location,
       });
     });
-/*
+  }
+
+  startTurn() {
     get("api/startTurn")
     .then((result) => {
       console.log(JSON.stringify(result));
+      this.setState({
+        dice: result.dice,
+        playerMoney: result.player.money,
+        playerLocation: result.newLoc,
+      })
+      
     });
-    */
+  }
+
+
+  endTurn(boughtProperty) {
+    console.log("*******");
+    post("api/endTurn", {boughtProperty: boughtProperty})
+    .then((player) => {
+      this.setState({
+        playerMoney: player.money
+      });
+      console.log(JSON.stringify(player));
+    });
+    
   }
 
   render() {
@@ -67,11 +86,26 @@ class Game extends Component {
         <div
           className="Profile-avatarContainer"
           onClick={() => {
-            this.testMove();
+            this.startTurn(); //bug
           }}
         >
           <div className="Profile-avatar" />
         </div>
+        <button
+          type="submit"
+          value="Submit"
+          onClick={this.endTurn(true)}
+        >
+          Buy
+        </button>
+
+        <button
+          type="submit"
+          value="Submit"
+          onClick={this.endTurn(false)}
+        >
+          End Turn
+        </button>
 
         <hr className="Profile-line" />
 

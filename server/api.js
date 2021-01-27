@@ -88,8 +88,7 @@ router.get("/player", auth.ensureLoggedIn, (req, res) => {
           isTurn: turn,
         });
         newPlayer.save().then((player) => {
-          res.send(player); //TODO .then()?
-          socketManager.getIo().emit("newTurn", newPlayer);
+          res.send(player);
         });
       }); //player.find.then
     } else {
@@ -114,6 +113,7 @@ router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
     };
     //query database for new location space
     Space.find({space_id: result.newLoc}).then((dBSpaces) => {
+      const s = board.spaces.find((staticS) => result.newLoc === staticS._id); //js find
       if (dBSpaces.length > 0) {
         const dBSpace = dBSpaces[0];
         if (dBSpace.owner === BANK) {
@@ -122,7 +122,6 @@ router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
         } else if (dBSpace.ownerId !== req.user._id) {
           result.paidRent = true;
           //pay rent - update user money
-          const s = board.spaces.find((staticS) => dBSpace.space_id === staticS._id); //js find
           const rent = dBSpace.numberOfBooths * s.rentPerBooth;
           player.money -= rent; //TODO player has enogh money
           //update owner money
@@ -132,7 +131,7 @@ router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
             owner.save(); //TODO notify owner client
           });
         }
-      } else {
+      } else  if (s.canOwn) {
         //space not found in database
         result.canBuy = true; //TODO player has enough money?
       }
