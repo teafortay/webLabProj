@@ -116,14 +116,17 @@ router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
       const s = board.spaces.find((staticS) => result.newLoc === staticS._id); //js find
       if (dBSpaces.length > 0) {
         const dBSpace = dBSpaces[0];
-        if (dBSpace.owner === BANK) {
+        if (dBSpace.owner === BANK && s.cost <= player.money) { //TODO recycling
           //buy
-          result.canBuy = true; //TODO player has enough money?
+          result.canBuy = true; //TODO player has enough money? DONE
         } else if (dBSpace.ownerId !== req.user._id) {
           result.paidRent = true;
           //pay rent - update user money
           const rent = dBSpace.numberOfBooths * s.rentPerBooth;
           player.money -= rent; //TODO player has enogh money
+          if (player.money <= 0) {
+            //Player.deleteOne({userId: req.user._id}).then((p) => console.log("you ran out of money"));
+          }
           //update owner money
           Player.find({userId: dBSpace.ownerId}).then((owners) => {
             const owner = owners[0]; //TODO check nonempty
@@ -131,9 +134,9 @@ router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
             owner.save(); //TODO notify owner client
           });
         }
-      } else  if (s.canOwn) {
+      } else  if (s.canOwn && s.cost <= player.money) {
         //space not found in database
-        result.canBuy = true; //TODO player has enough money?
+        result.canBuy = true; //TODO player has enough money? DONE
       }
       //update database
       player.save().then((player) => {
@@ -146,7 +149,7 @@ router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
 
 router.post("/endTurn", auth.ensureLoggedIn, (req, res) => {
   Player.find({userId: req.user._id}).then((players) => {
-    const player = players[0];
+    const player = players[0]; //TODO check nonempty?
     if (!player.isTurn) {
       return res.status(401).send({ err: "not your turn" });
     }
@@ -154,6 +157,7 @@ router.post("/endTurn", auth.ensureLoggedIn, (req, res) => {
     if (req.body.boughtProperty) { 
       //TODO check player has enough money
       const space = board.spaces.find((staticS) => player.location === staticS._id); //js find
+      //check here
       player.money -= space.cost;
       Space.find({space_id: space._id}).then((dBSpaces) => {
         if (dBSpaces.length > 0) {
@@ -170,7 +174,7 @@ router.post("/endTurn", auth.ensureLoggedIn, (req, res) => {
             numberOfBooths: 1,
           });
           newSpace.save();
-        } //TODO turns
+        } //TODO turns DONE?
         player.save().then((p) => {
           res.send(p);
           incrementTurn();
