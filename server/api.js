@@ -143,7 +143,7 @@ router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
       //update database
       player.save().then((player) => {
         result.player = player; //display player bank
-        res.send(result)
+        res.send(result);
       })
     }); //space.find.then
   }); //player.find.then
@@ -155,6 +155,7 @@ router.post("/endTurn", auth.ensureLoggedIn, (req, res) => {
     if (!player.isTurn) {
       return res.status(401).send({ err: "not your turn" });
     }
+    player.isTurn = false;
     //handle buying property
     const space = board.spaces.find((staticS) => player.location === staticS._id); //js find
     if (space.canOwn && req.body.boughtProperty) { 
@@ -201,8 +202,7 @@ const incrementTurn = () => {
   Player.find({}).then((players) => {
     for (let index = 0; index < players.length; index++) {
       const player = players[index];
-      if (player.isTurn) {
-        player.isTurn = false;
+      if (player.didStartTurn) {
         player.didStartTurn = false;
         player.save().then((player) => {
         
