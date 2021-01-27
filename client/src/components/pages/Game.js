@@ -33,64 +33,21 @@ class Game extends Component {
       this.setState({spaces: spaceObjs});
     });
     
-    get("api/player", {googleid:this.props.userId, name: this.props.userName})
+    get("api/player")
       .then((playerObj) => {
       this.setState({
         playerMoney: playerObj.money,
-        playerProperties: playerObj.properties,
         playerLocation: playerObj.location,
       });
     });
-
-    get("api/startTurn", {googleid:this.props.userId})
+/*
+    get("api/startTurn")
     .then((result) => {
       console.log(JSON.stringify(result));
     });
+    */
   }
 
-  //move to logic file in server
-  rollDice = () => {
-    const rand = Math.random();
-    const diceRoll = (Math.floor(rand * 11) + 2);
-    return diceRoll;
-  };
-
-  testMove = () => {
-    get("api/testMove", {loc: this.state.playerLocation})
-    .then((newLoc) => {
-      this.setState({
-        playerLocation: newLoc.newLoc,
-        dice: newLoc.dice
-      });
-    });
-  };
-
-  movePlayer =() => {
-    const playerLoc = this.state.playerLocation;
-    const diceRollResult = this.rollDice();
-    let newLoc = playerLoc + diceRollResult;
-    const boardLength = this.state.spaces.length;
-    if (newLoc >= boardLength) {
-      newLoc -= boardLength;
-    }
-    this.setState({
-      playerLocation: newLoc,
-      dice: diceRollResult,
-    });
-  };
-/*
-  buyProperty = (playerObj, spaceObj) => {
-    if (spaceObj.owner !== BANK) {
-      return "PlayerObj.owner already owns this property"
-    } else if (playerObj.money < spaceObj.cost) {
-      return "Sorry, you don't have enough money"
-    }
-    this.setState({
-      spaceObj.owner: playerObj.name,
-      playerObj.money: playerObj.money - spaceObj.cost
-    });
-  };
-*/
   render() {
     return (
       <>

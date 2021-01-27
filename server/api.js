@@ -89,7 +89,7 @@ router.get("/player", auth.ensureLoggedIn, (req, res) => {
         });
         newPlayer.save().then((player) => {
           res.send(player); //TODO .then()?
-          socketManager.getIo().emit("newTurn", nextPlayer);
+          socketManager.getIo().emit("newTurn", newPlayer);
         });
       }); //player.find.then
     } else {
