@@ -4,6 +4,7 @@ import Board from "../modules/Board.js";
 import SingleSpace from "../modules/SingleSpace.js";
 
 import { get, post } from "../../utilities";
+import { socket } from "../../client-socket.js"
 
 import "./Game.css";
 import "./Profile.css";
@@ -39,8 +40,18 @@ class Game extends Component {
         playerLocation: playerObj.location,
       });
     });
-  }
 
+    socket.on("newTurn", (player) => {
+      console.log("^^^ newTurn data" + JSON.stringify(player));
+      //update board
+      get("/api/board").then((spaceObjs) => {
+        this.setState({spaces: spaceObjs});
+      });
+      //display who's turn it is
+      alert("it's now " + player.name + "'s turn.")
+    });
+  }
+ 
   startTurn() {
     get("api/startTurn")
     .then((result) => {
