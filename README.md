@@ -1,36 +1,14 @@
-# Project Skeleton
+# How to play MIopoly:
 
-## What we provide
-
-- Google Auth (Skeleton.js & auth.js)
-  - Disclaimer: Auth isn't being taught until the second week.
-- Socket Infrastructure (client-socket.js & server-socket.js)
-  - Disclaimer: Socket isn't being taught until the second week.
-- User Model (auth.js & user.js)
-
-## What you need to change
-
-- Change the font in utilities.css
-- Change the Frontend CLIENT_ID for Google Auth (Skeleton.js) (we'll talk about it at the end of week 2)
-- Change the Server CLIENT_ID for Google Auth (auth.js) (we'll talk about it at the end of week 2)
-- Change the Database SRV for Atlas (server.js)
-- Change the Database Name for MongoDB (server.js)
-- Add a favicon to your website at the path client/dist/favicon.ico
-- Update website title in client/dist/index.html
-- Update this README file ;)
-- Update the package.json file with your app name :) (line 2)
-
-## Socket stuff
-Note: we'll be getting to this in lecture in week 2, so don't worry if you don't know it yet
-
-- If you're not using realtime updating or don't need server->client communication, you can remove socket entirely! (server-socket.js, client-socket.js, and anything that imports them)
-- If you are using socket, consider what you want to do with the FIXME in server-socket.js
-
-
-## How to integrate into your own project
-
-On GitHub download this repository as a zip file, then extract the files into your own repository.
-Warning: make sure you copy the hidden files too: .babelrc, .gitignore, .npmrc, and .prettierrc
+1. log in, this creates a new player in the database.
+Players can roll dice only once per turn
+Players take turns moving aound board
+This is a mulipayer game.
+When you land on a space that you can buy, You have the option to buy it. The "Buy" button always shows up but the backend wont let you buy GO.
+Chance and Community chest are not implemented, think of these spaces like free parking.
+2. Buy a property and now you are the owner in the database.
+Defaults to 1 booth. You cannot buy more booths, yet.
+3. Stay logged in! The turn order doesn't care if you're logged out, for now. So if its your turn, the game halts until you move- working on fixing this!
 
 ## don't touch
 
