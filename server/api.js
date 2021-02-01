@@ -100,102 +100,15 @@ router.get("/player", auth.ensureLoggedIn, (req, res) => {
 });
 
 router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
-  //get player
-  Player.find({userId: req.user._id}).then((players) => {
-    const player = players[0]; //TODO handle empty 
-    if (!player.isTurn || player.didStartTurn) {
-      return res.status(401).send({ err: "not your turn" });
-    }
-    player.didStartTurn = true;
-    const oldLoc = player.location;
-    //roll dice, get new location- add GO money
-    const result = logic.movePlayer(oldLoc);
-    player.location = result.newLoc;
-    if (result.passGO) {
-      player.money += 200;
-    };
-    //query database for new location space
-    Space.find({space_id: result.newLoc}).then((dBSpaces) => {
-      const s = board.spaces.find((staticS) => result.newLoc === staticS._id); //js find
-      if (dBSpaces.length > 0) {
-        const dBSpace = dBSpaces[0];
-        if (dBSpace.owner === BANK && s.cost <= player.money) { //TODO recycling
-          //buy
-          result.canBuy = true; 
-        } else if (dBSpace.ownerId !== req.user._id) {
-          result.paidRent = true;
-          //pay rent - update user money
-          const rent = dBSpace.numberOfBooths * s.rentPerBooth;
-          player.money -= rent; //TODO player has enogh money
-          if (player.money <= 0) {
-            //Player.deleteOne({userId: req.user._id}).then((p) => console.log("you ran out of money"));
-          }
-          //update owner money
-          Player.find({userId: dBSpace.ownerId}).then((owners) => {
-            if (owners) {
-              const owner = owners[0]; 
-            owner.money += rent;
-            owner.save(); //TODO notify owner client
-            }
-            
-          });
-        }
-      } else  if (s.canOwn && s.cost <= player.money) {
-        //space not found in database
-        result.canBuy = true; //TODO player has enough money? DONE
-      }
-      //update database
-      player.save().then((player) => {
-        result.player = player; //display player bank
-        res.send(result);
-      })
-    }); //space.find.then
-  }); //player.find.then
+  
+  const userId = req.user._id;
+  logic.startTurn(userId, res);
 });
 
 router.post("/endTurn", auth.ensureLoggedIn, (req, res) => {
-  Player.find({userId: req.user._id}).then((players) => {
-    const player = players[0]; //TODO check nonempty?
-    if (!player.isTurn) {
-      return res.status(401).send({ err: "not your turn" });
-    }
-    if (!player.didStartTurn) {
-      return res.status(401).send({ err: "Did not start turn" });
-    }
-    player.isTurn = false;
-    //handle buying property
-    const space = board.spaces.find((staticS) => player.location === staticS._id); //js find
-      
-    if (req.body.boughtProperty && space.canOwn && player.money >= space.cost) { 
-      //TODO check player has enough money DONE
-      player.money -= space.cost;
-      Space.find({space_id: space._id}).then((dBSpaces) => {
-        if (dBSpaces.length > 0) {
-          const dBSpace = dBSpaces[0];
-          dBSpace.ownerId = player.userId;
-          dBSpace.owner = player.name;
-          dBSpace.numberOfBooths =1;
-          dBSpace.save();
-        } else {
-          const newSpace = new Space({
-            space_id: space._id,
-            owner: player.name,
-            ownerId: player.userId,
-            numberOfBooths: 1,
-          });
-          newSpace.save();
-        } //TODO turns DONE?
-        player.save().then((p) => {
-          res.send(p);
-          incrementTurn();
-        });
-      }); //space.find.then
-    } else { ///if not bought property 
-      res.send(player);
-      incrementTurn();
-    }
-  }); //player.find.then
-  
+ const userId = req.user._id;
+ const boughtProperty = req.body.boughtProperty
+ logic.endTurn(userId, boughtProperty, res);
 });//end of post
 
 // anything else falls to this "not found" case
@@ -204,29 +117,11 @@ router.all("*", (req, res) => {
   res.status(404).send({ msg: "API route not found" });
 });
 
-const incrementTurn = () => {
-  Player.find({}).then((players) => {
-    for (let index = 0; index < players.length; index++) {
-      const player = players[index];
-      if (player.didStartTurn) {
-        //player.isTurn = false;
-        player.didStartTurn = false;
-        player.save().then((player) => {
-        
-          let nextTurnIndex = index + 1;
-          if (nextTurnIndex >= players.length) {
-            nextTurnIndex = 0;
-          }
-          const nextPlayer = players[nextTurnIndex];
-          nextPlayer.isTurn = true;
-          nextPlayer.save().then((nextPlayer) => {
-            socketManager.getIo().emit("newTurn", nextPlayer);
-          });
-        });
-      } 
-    }
-  });
+const ghostMove = () => {
+
 };
+
+
 
 module.exports = router;
 
