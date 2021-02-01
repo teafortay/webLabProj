@@ -1,8 +1,9 @@
 /*
 game logic goes here
 */
+const Player = require("./models/player");
+const Space = require("./models/space");
 
-//move to logic file in server
 const rollDice = () => {
     const rand = Math.random();
     const diceRoll = (Math.floor(rand * 11) + 2);
@@ -27,19 +28,18 @@ const rollDice = () => {
       paidRent: false,
     };
   };
-/*
-  buyProperty = (playerObj, spaceObj) => {
-    if (spaceObj.owner !== BANK) {
-      return "PlayerObj.owner already owns this property"
-    } else if (playerObj.money < spaceObj.cost) {
-      return "Sorry, you don't have enough money"
-    }
-    this.setState({
-      spaceObj.owner: playerObj.name,
-      playerObj.money: playerObj.money - spaceObj.cost
-    });
+
+  const ghostMove = (playerObj) => {
+    //roll dice, move player
+
+    //pay rent
+
+    //call endTurn(false)
+
+    //penalize?
+
   };
-*/
+
 module.exports = {
   movePlayer,
 }

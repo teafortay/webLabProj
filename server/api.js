@@ -87,6 +87,7 @@ router.get("/player", auth.ensureLoggedIn, (req, res) => {
           location: 0,
           isTurn: turn,
           didStartTurn: false,
+          ghost: false,
         });
         newPlayer.save().then((player) => {
           res.send(player);
@@ -120,7 +121,7 @@ router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
         const dBSpace = dBSpaces[0];
         if (dBSpace.owner === BANK && s.cost <= player.money) { //TODO recycling
           //buy
-          result.canBuy = true; //TODO player has enough money? DONE
+          result.canBuy = true; 
         } else if (dBSpace.ownerId !== req.user._id) {
           result.paidRent = true;
           //pay rent - update user money
@@ -131,9 +132,12 @@ router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
           }
           //update owner money
           Player.find({userId: dBSpace.ownerId}).then((owners) => {
-            const owner = owners[0]; //TODO check nonempty
+            if (owners) {
+              const owner = owners[0]; 
             owner.money += rent;
             owner.save(); //TODO notify owner client
+            }
+            
           });
         }
       } else  if (s.canOwn && s.cost <= player.money) {
