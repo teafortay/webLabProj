@@ -11,6 +11,7 @@ const staticSpaces = require("./staticSpaces");
 const board = staticSpaces.board;
 const BANK = staticSpaces.BANK;
 
+const dummyRes = {send: () => {}};//don't need statu?
 
 const rollDice = () => {
     const rand = Math.random();
@@ -42,7 +43,6 @@ const rollDice = () => {
       for (let index = 0; index < players.length; index++) {
         const player = players[index];
         if (player.didStartTurn) {
-          //player.isTurn = false;
           player.didStartTurn = false;
           player.save().then((player) => {
           
@@ -53,6 +53,9 @@ const rollDice = () => {
             const nextPlayer = players[nextTurnIndex];
             nextPlayer.isTurn = true;
             nextPlayer.save().then((nextPlayer) => {
+              if (nextPlayer.ghostMode) {
+                ghostMove(nextPlayer);
+              }
               socketManager.getIo().emit("newTurn", nextPlayer);
             });
           });
@@ -159,12 +162,8 @@ const rollDice = () => {
   }); //player.find.then
   }
   const ghostMove = (playerObj) => {
-    //roll dice, move player
-
-    //pay rent
-
-    //call endTurn(false)
-
+    startTurn(playerObj.userId, dummyRes);
+    endTurn(playerObj.userId, false, dummyRes);
     //penalize?
 
   };

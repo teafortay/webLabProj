@@ -1,6 +1,6 @@
 const BANK = "MIT";
-const COMMUNITY_CHEST = "Community Chest";
-const CHANCE = "Chance";
+const COMMUNITY_CHEST = "Treasure Chest";
+const CHANCE = "Tim's Tour";
 
 const board = {
     spaces: [
