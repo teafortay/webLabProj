@@ -13,6 +13,9 @@ const BANK = staticSpaces.BANK;
 
 const dummyRes = {send: () => {}};//don't need statu?
 
+// timer used to make ghost turns
+let timer = null;
+
 const rollDice = () => {
     const rand = Math.random();
     const diceRoll = (Math.floor(rand * 11) + 2);
@@ -20,57 +23,118 @@ const rollDice = () => {
     return diceRoll;
   };
 
-  const movePlayer =(playerLoc) => {
-    let passGO = false;
-    const diceRollResult = rollDice();
-    let newLoc = Number(playerLoc) + diceRollResult;
-    const boardLength = 40; //not dynamic
-    if (newLoc >= boardLength) {
-      newLoc -= boardLength;
-      passGO = true;
+const movePlayer =(playerLoc) => {
+  let passGO = false;
+  const diceRollResult = rollDice();
+  let newLoc = Number(playerLoc) + diceRollResult;
+  const boardLength = 40; //not dynamic
+  if (newLoc >= boardLength) {
+    newLoc -= boardLength;
+    passGO = true;
+  }
+  return {
+    newLoc: newLoc,
+    dice: diceRollResult,
+    passGO: passGO,
+    canBuy: false,
+    paidRent: false,
+  };
+};
+
+const getPlayer = (userId, res) => {
+  // Search for this player
+  Player.find({userId: userId}).then((players) => {
+    if (players.length === 0) {
+      // player not found, make a new one and save
+      const newPlayer = new Player({
+        userId: req.user._id,
+        name: req.user.name,
+        money: 2500,
+        location: 0,
+        isTurn: false,
+        didStartTurn: false,
+        ghost: false,
+      });
+      newPlayer.save().then((player) => {
+        res.send(player);
+      });
+    } else {
+      // return the found player
+      const curPlayer = players[0];
+      res.send(curPlayer);
     }
-    return {
-      newLoc: newLoc,
-      dice: diceRollResult,
-      passGO: passGO,
-      canBuy: false,
-      paidRent: false,
+  });
+};
+
+const incrementTurn = (curPlayerUserId) => {
+  console.log("incrementTurn()");
+  Player.find({}).then((players) => {
+    // determine if any players are active
+    const playersActive = ( players.find((p) => !p.ghost) != undefined ); // javascript find
+    console.log("playersActive="+playersActive);
+    if (!playersActive) { 
+      socketManager.getIo().emit("newTurn", {gameStatus: "hold"});
+      return;
     };
-  };
 
-  const incrementTurn = () => {
-    Player.find({}).then((players) => {
-      for (let index = 0; index < players.length; index++) {
-        const player = players[index];
-        if (player.didStartTurn) {
-          player.didStartTurn = false;
-          player.save().then((player) => {
-          
-            let nextTurnIndex = index + 1;
-            if (nextTurnIndex >= players.length) {
-              nextTurnIndex = 0;
-            }
-            const nextPlayer = players[nextTurnIndex];
-            nextPlayer.isTurn = true;
-            nextPlayer.save().then((nextPlayer) => {
-              if (nextPlayer.ghostMode) {
-                ghostMove(nextPlayer);
-              }
-              socketManager.getIo().emit("newTurn", nextPlayer);
-            });
-          });
-        } 
+    // loop through each player looking for current player
+    for (let index = 0; index < players.length; index++) {
+      if (players[index].userId === curPlayerUserId) {
+        // find next player
+        let nextTurnIndex = index + 1 >= players.length ? 0 : index + 1;
+        const nextPlayer = players[nextTurnIndex];
+        console.log("nextPlayer="+nextPlayer.name+" "+nextPlayer.ghost);
+        nextPlayer.isTurn = true;
+        nextPlayer.save().then((nextPlayer) => {
+          countDownToGhostTurn(nextPlayer.ghost);
+          socketManager.getIo().emit("newTurn", {gameStatus: "active", player: nextPlayer});
+        });
+        break;
+      } 
+    }
+  });
+};
+
+const requestTurn = (userId, res) => {
+  console.log("requestTurn()");
+  Player.find({userId: userId}).then((players) => {
+    if (players.length === 0) {
+      return res.status(409).send({ err: "Can not find user" }); 
+    }
+    const curPlayer = players[0];
+    curPlayer.ghost = false; // turn off ghost mode
+    Player.find({isTurn: true}).then((isTurnPlayers) => {
+      
+      if (isTurnPlayers.length === 0) {
+        // no player has the turn 
+        // set turn to requesting player and start timer
+          curPlayer.isTurn = true;
+          countDownToGhostTurn(curPlayer.ghost);
+      } else {
+        // make sure timer is set for player with the turn
+        // should only be needed when data is bad and needs cleanup
+        countDownToGhostTurn(isTurnPlayers[0].ghost);
       }
+      curPlayer.save().then((player) => {
+        res.send(player);
+        if (player.isTurn) {
+          socketManager.getIo().emit("newTurn", {gameStatus: "active", player: player});
+        }
+      });
     });
-  };
+  });
+};
 
-  const startTurn = (userId, res) => {
-    //get player
+const startTurn = (userId, res, ghost) => {
+  //get player
+  console.log("startTurn()");
   Player.find({userId: userId}).then((players) => {
     const player = players[0]; //TODO handle empty 
     if (!player.isTurn || player.didStartTurn) {
       return res.status(401).send({ err: "not your turn" }); //works?
     }
+    clearTimer();
+    player.ghost = ghost;
     player.didStartTurn = true;
     const oldLoc = player.location;
     //roll dice, get new location- add GO money
@@ -87,7 +151,7 @@ const rollDice = () => {
         if (dBSpace.owner === BANK && s.cost <= player.money) { //TODO recycling
           //buy
           result.canBuy = true; 
-        } else if (dBSpace.ownerId !== req.user._id) {
+        } else if (dBSpace.ownerId !== userId) {
           result.paidRent = true;
           //pay rent - update user money
           const rent = dBSpace.numberOfBooths * s.rentPerBooth;
@@ -112,23 +176,30 @@ const rollDice = () => {
       //update database
       player.save().then((player) => {
         result.player = player; //display player bank
-        res.send(result);
+        res.send(result); 
+        countDownToGhostTurn(ghost, endTurn);
       })
     }); //space.find.then
   }); //player.find.then
-  };
+};
 
-  const endTurn = (userId, boughtProperty, res) => {
-    //get player
+const endTurn = (userId, res, boughtProperty, ghost) => {
+  console.log("endTurn()");
+  //get player
   Player.find({userId: userId}).then((players) => {
     const player = players[0]; //TODO check nonempty?
     if (!player.isTurn) {
+      console.log("401: not your turn");
       return res.status(401).send({ err: "not your turn" });
     }
     if (!player.didStartTurn) {
+      console.log("401: Did not start turn");
       return res.status(401).send({ err: "Did not start turn" });
     }
+    player.ghost = ghost;
     player.isTurn = false;
+    player.didStartTurn = false;
+    clearTimer();
     //handle buying property
     const space = board.spaces.find((staticS) => player.location === staticS._id); //js find
       
@@ -150,25 +221,59 @@ const rollDice = () => {
           });
           newSpace.save();
         } //TODO turns DONE?
-        player.save().then((p) => {
-          res.send(p);
-          incrementTurn();
-        });
+        closeoutPlayer(player, res);
       }); //space.find.then
     } else { ///if not bought property 
-      res.send(player);
-      incrementTurn();
+      closeoutPlayer(player, res);
     }
   }); //player.find.then
-  }
-  const ghostMove = (playerObj) => {
-    startTurn(playerObj.userId, dummyRes);
-    endTurn(playerObj.userId, false, dummyRes);
-    //penalize?
+}
 
-  };
+const closeoutPlayer = (player, res) => {
+  player.save().then((p) => {
+    res.send(p);
+    incrementTurn(p.userId);
+  });
+};
+
+const countDownToGhostTurn = (ghost) => {
+  console.log("countDownToGhostTurn("+ghost+")");
+  // exit if timer already set
+  if (timer) {
+    console.log("Timer already set");
+    return;
+  }
+  const waitMS = ghost ? 9000 : 12000;
+  console.log("Setting timer: "+ waitMS);
+  timer = setTimeout(() => {
+    timer = null;
+    // get layer whose turn it is
+    Player.find({isTurn: true}).then((players) => {
+      if (players.length === 0) {
+        return;
+      }
+      const player = players[0];
+      console.log("Ghost Turn for "+player.name);
+      if (player.didStartTurn) {
+        endTurn(player.userId, dummyRes, false, true);
+      } else {
+        startTurn(player.userId, dummyRes, true);
+      }
+    });
+  }, waitMS);
+};
+
+const clearTimer = () => {
+  if (timer) {
+    clearTimeout(timer);
+    console.log("Clearing timer");
+    timer = null;
+  }
+};
 
 module.exports = {
+  getPlayer,
+  requestTurn,
   startTurn,
   endTurn,
 }

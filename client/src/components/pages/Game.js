@@ -24,7 +24,7 @@ class Game extends Component {
       playerMoney: 0,
       playerLocation: 0,
       turnMessage: "",
-      
+
     }
   }
 
@@ -32,26 +32,37 @@ class Game extends Component {
     // remember -- api calls go here!
     this.updateBoard();
     
-    get("api/player")
-      .then((playerObj) => {
+    get("api/player").then((playerObj) => {
+      let turnMessage = "";
+      if (playerObj.isTurn) {
+        turnMessage = "It's your turn!";
+      }  
       this.setState({
         playerMoney: playerObj.money,
         playerLocation: playerObj.location,
+        turnMessage: turnMessage,
       });
     });
 
-    socket.on("newTurn", (player) => {
-      console.log("^^^ newTurn data" + JSON.stringify(player));
+    socket.on("newTurn", (result) => {
+      console.log("^^^ newTurn data" + JSON.stringify(result));
       //update board
       this.updateBoard();
-
       //display who's turn it is
-      this.setState({
-        turnMessage: "it's now " + player.name + "'s turn.",
-      });
-      if (player.userId === this.props.userId) {
-        alert("it's now your turn!");
+      let turnMessage = "";
+      if (result.gameStatus === "active") {
+        if (result.player.userId === this.props.userId) {
+          turnMessage = "it's your turn!";
+        } else {
+          turnMessage = "It's " + result.player.name + "'s turn.";
+        }
+      } else if (result.gameStatus === "hold") {
+        turnMessage = "Game on hold. Request Turn to resume play."
       }
+
+      this.setState({
+        turnMessage: turnMessage,
+      });
     });
   }
 
@@ -61,9 +72,14 @@ class Game extends Component {
     });
   }
  
+  requestTurn() {
+    get("api/requestTurn").then((player) => {
+      console.log("get api/requestTurn result:"+JSON.stringify(player));
+    });
+  }
+
   startTurn() {
-    get("api/startTurn")
-    .then((result) => {
+    get("api/startTurn").then((result) => {
       console.log(JSON.stringify(result));
       this.setState({
         dice: result.dice,
@@ -75,17 +91,14 @@ class Game extends Component {
   }
 
   endTurn(boughtProperty) {
-    
     console.log("*******");
-    post("api/endTurn", {boughtProperty: boughtProperty})
-    .then((player) => {
+    post("api/endTurn", {boughtProperty: boughtProperty}).then((player) => {
       this.setState({
         playerMoney: player.money
       });
       this.updateBoard();
-      console.log(JSON.stringify(player));
-    });
-    
+      console.log("api/endTurn response: "+JSON.stringify(player));
+    }); 
   }
 
   render() {
@@ -114,6 +127,13 @@ class Game extends Component {
         >
           <div className="Profile-avatar" />
         </div>
+        <button
+          type="submit"
+          value="Submit"
+          onClick={this.requestTurn}
+        >
+          Request a Turn
+        </button>
         <button
           type="submit"
           value="Submit"
