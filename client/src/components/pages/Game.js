@@ -21,9 +21,8 @@ class Game extends Component {
     this.state = {
       spaces: [],
       dice: 0,
-      playerMoney: 0,
-      playerLocation: 0,
       turnMessage: "",
+      player : {money: 0, location: 0, isTurn: false, didStartTurn: false, ghost: true},
 
     }
   }
@@ -38,8 +37,7 @@ class Game extends Component {
         turnMessage = "It's your turn!";
       }  
       this.setState({
-        playerMoney: playerObj.money,
-        playerLocation: playerObj.location,
+        player: playerObj,
         turnMessage: turnMessage,
       });
     });
@@ -50,9 +48,11 @@ class Game extends Component {
       this.updateBoard();
       //display who's turn it is
       let turnMessage = "";
+      let curPlayer = this.state.player;
       if (result.gameStatus === "active") {
         if (result.player.userId === this.props.userId) {
           turnMessage = "it's your turn!";
+          curPlayer = result.player;
         } else {
           turnMessage = "It's " + result.player.name + "'s turn.";
         }
@@ -62,6 +62,7 @@ class Game extends Component {
 
       this.setState({
         turnMessage: turnMessage,
+        player: curPlayer, 
       });
     });
   }
@@ -83,8 +84,7 @@ class Game extends Component {
       console.log(JSON.stringify(result));
       this.setState({
         dice: result.dice,
-        playerMoney: result.player.money,
-        playerLocation: result.newLoc,
+        player: result.player,
       })
       
     });
@@ -94,7 +94,7 @@ class Game extends Component {
     console.log("*******");
     post("api/endTurn", {boughtProperty: boughtProperty}).then((player) => {
       this.setState({
-        playerMoney: player.money
+        player: player
       });
       this.updateBoard();
       console.log("api/endTurn response: "+JSON.stringify(player));
@@ -161,7 +161,7 @@ class Game extends Component {
             <h4 className="Profile-subTitle">Your game stats:</h4>
             <div id="profile-description">
               <p>You currently own:{this.state.playerProperties}</p>
-              <p>You currenty have: ${this.state.playerMoney}</p>
+              <p>You currenty have: ${this.state.player.money}</p>
             </div>
           </div>
           <div className="Profile-subContainer u-textCenter">
@@ -170,7 +170,7 @@ class Game extends Component {
           </div>
           <div className="Profile-subContainer u-textCenter">
             <h4 className="Profile-subTitle">Your current location:</h4>
-            <div id="favorite-cat">{this.state.spaces.filter(s => s._id === this.state.playerLocation)
+            <div id="favorite-cat">{this.state.spaces.filter(s => s._id === this.state.player.location)
               .map((s) =>
               <SingleSpace
               key={`SingleSpace_${s._id}`}
