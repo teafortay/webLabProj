@@ -15,15 +15,19 @@ import Dice from "../modules/Dice.js";
 const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
 
 class Game extends Component {
+
   constructor(props) {
     super(props);
+    
     // Initialize Default State
+    const turnMessage = this.getTurnMessage("hold", false, "");
+    console
     this.state = {
       spaces: [],
       dice: 0,
-      turnMessage: "",
+      turnMessage: turnMessage,
       player : {money: 0, location: 0, isTurn: false, didStartTurn: false, ghost: true},
-
+      gameStatus: "hold",
     }
   }
 
@@ -32,10 +36,7 @@ class Game extends Component {
     this.updateBoard();
     
     get("api/player").then((playerObj) => {
-      let turnMessage = "";
-      if (playerObj.isTurn) {
-        turnMessage = "It's your turn!";
-      }  
+      let turnMessage = this.getTurnMessage(this.state.gameStatus, playerObj.isTurn, "");
       this.setState({
         player: playerObj,
         turnMessage: turnMessage,
@@ -46,25 +47,48 @@ class Game extends Component {
       console.log("^^^ newTurn data" + JSON.stringify(result));
       //update board
       this.updateBoard();
-      //display who's turn it is
-      let turnMessage = "";
+
+      // update turn display
       let curPlayer = this.state.player;
+      let turnMessage = "";
       if (result.gameStatus === "active") {
-        if (result.player.userId === this.props.userId) {
-          turnMessage = "it's your turn!";
-          curPlayer = result.player;
-        } else {
-          turnMessage = "It's " + result.player.name + "'s turn.";
+        let userHasTurn = result.player.userId === this.props.userId ? true : false;
+        turnMessage = this.getTurnMessage("active", userHasTurn, result.player.name);
+        if (userHasTurn) {
+          curPlayer = result.player; // update state player below with updated player record
         }
-      } else if (result.gameStatus === "hold") {
-        turnMessage = "Game on hold. Request Turn to resume play."
+      } else {
+        curPlayer.isTurn = false;
+        curPlayer.didStartTurn = false;
+        turnMessage = this.getTurnMessage(result.gameStatus, false, "");
       }
 
       this.setState({
         turnMessage: turnMessage,
         player: curPlayer, 
+        gameStatus: result.gameStatus,
       });
-    });
+
+    }); // componentDidMount()
+
+  } // componentDidMount()
+
+  getTurnMessage(gameStatus, curPlayerIsTurn, playerName="")  {
+    let outMessage = "";
+    if (gameStatus === "active") {
+      if (curPlayerIsTurn) {
+        outMessage = "it's your turn! Roll the dice.";
+      } else {
+        if (playerName != "") {
+          outMessage = "It's " + playerName + "'s turn.";
+        } else {
+          outMessage = "It's another player's turn.";
+        }
+      }
+    } else if (gameStatus === "hold") {
+      outMessage = "Game on hold. Request a turn to resume play."
+    }
+    return outMessage;
   }
 
   updateBoard() {
@@ -78,7 +102,8 @@ class Game extends Component {
       console.log("get api/requestTurn result:"+JSON.stringify(player));
     });
   }
-
+  
+  someVar=13;
   startTurn() {
     get("api/startTurn").then((result) => {
       console.log(JSON.stringify(result));
@@ -121,16 +146,21 @@ class Game extends Component {
 
         <div
           className="Profile-avatarContainer"
-          onClick={() => {
-            this.startTurn(); //bug
-          }}
+          onClick={() => { this.startTurn(); }}
+          hidden={!(this.state.player.isTurn && !this.state.player.didStartTurn)}
         >
           <div className="Profile-avatar" />
+        </div>
+        <div>
+          Game status: {this.state.gameStatus}, 
+          isTurn: {this.state.player.isTurn ? "true" : "false"},  
+          didStartTurn: {this.state.player.didStartTurn ? "true" : "false"}
         </div>
         <button
           type="submit"
           value="Submit"
           onClick={this.requestTurn}
+          hidden={!(this.state.gameStatus === "hold")}
         >
           Request a Turn
         </button>
@@ -138,6 +168,7 @@ class Game extends Component {
           type="submit"
           value="Submit"
           onClick={() => {this.endTurn(true);}}
+          hidden={!(this.state.player.isTurn && this.state.player.didStartTurn)}
         >
           Buy and End Turn
         </button>
@@ -146,6 +177,7 @@ class Game extends Component {
           type="submit"
           value="Submit"
           onClick={() => {this.endTurn(false);}}
+          hidden={!(this.state.player.isTurn && this.state.player.didStartTurn)}
         >
           End Turn
         </button>

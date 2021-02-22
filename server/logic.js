@@ -177,6 +177,7 @@ const startTurn = (userId, res, ghost) => {
       player.save().then((player) => {
         result.player = player; //display player bank
         res.send(result); 
+        socketManager.getIo().emit("newTurn", {gameStatus: "active", player: player});
         countDownToGhostTurn(ghost, endTurn);
       })
     }); //space.find.then
