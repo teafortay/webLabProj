@@ -17,7 +17,6 @@ class CountDown extends Component {
   }
 
   componentWillReceiveProps(props) {
-    console.log("componentWillReceiveProps() props="+JSON.stringify(props));
     this.setState({secsRemaining : props.seconds});
   }
 
@@ -28,16 +27,16 @@ class CountDown extends Component {
     }
     if (this.state.secsRemaining > 1) {
         timer = setTimeout(() => {
-          console.log("Timeout func called");
           this.setState({ secsRemaining: this.state.secsRemaining - 1, });
         }, 1000);
     } else if (this.state.secsRemaining !== 0) {
-      this.setState({ secsRemaining: 0, });
+      timer = setTimeout(() => {
+        this.setState({ secsRemaining: 0, });
+      }, 10);
     }
   }
 
   render() {
-    console.log("render seconds="+this.props.seconds);
     this.countDown();
     return (
       <span>

@@ -66,7 +66,7 @@ class Game extends Component {
         }
      */
     socket.on("newTurn", (result) => {
-      console.log("^^^ newTurn data" + JSON.stringify(result));
+      //console.log("^^^ newTurn data" + JSON.stringify(result));
       //update board
       this.updateBoard();
 
@@ -108,11 +108,10 @@ class Game extends Component {
         }
       } else {
         if (this.state.turnPlayer.name != "") {
-          outMessage = "It's " + this.state.turnPlayer.name + "'s turn.";
           if (this.state.turnPlayer.didStartTurn) {
-            outMessage += " Waiting for them to end their turn."
+            outMessage = " Waiting for " + this.state.turnPlayer.name + " to end their turn."
           } else {
-            outMessage += " Waiting for them to start their turn."
+            outMessage = " Waiting for " + this.state.turnPlayer.name + " to start their turn."
           }
         } else {
           outMessage = "It's another player's turn.";
@@ -132,14 +131,20 @@ class Game extends Component {
  
   requestTurn() {
     get("api/requestTurn").then((player) => {
-      console.log("get api/requestTurn result:"+JSON.stringify(player));
+      //console.log("get api/requestTurn result:"+JSON.stringify(player));
+    });
+  }
+
+  requestMoreTime() {
+    get("api/requestMoreTime").then((player) => {
+      //console.log("get api/requestMoreTime result:"+JSON.stringify(player));
     });
   }
   
   someVar=13;
   startTurn() {
     get("api/startTurn").then((result) => {
-      console.log(JSON.stringify(result));
+      //console.log(JSON.stringify(result));
       this.setState({
         dice: result.dice,
         mePlayer: result.player,
@@ -149,13 +154,12 @@ class Game extends Component {
   }
 
   endTurn(boughtProperty) {
-    console.log("*******");
     post("api/endTurn", {boughtProperty: boughtProperty}).then((player) => {
       this.setState({
         mePlayer: player
       });
       this.updateBoard();
-      console.log("api/endTurn response: "+JSON.stringify(player));
+      //console.log("api/endTurn response: "+JSON.stringify(player));
     }); 
   }
 
@@ -175,7 +179,20 @@ class Game extends Component {
           />
         </div>
 
-        <div>{this.getTurnMessage()} <CountDown seconds={this.state.timer/1000} /></div>
+        <div>
+          {this.getTurnMessage()} 
+          &nbsp;&nbsp;
+          <CountDown seconds={this.state.timer/1000} />
+          &nbsp;&nbsp;
+          <button
+            type="submit"
+            value="Submit"
+            onClick={this.requestMoreTime}
+            hidden={!(this.state.mePlayer.isTurn)}
+          >
+            Get More Time
+          </button>
+        </div>
 
         <div
           className="Profile-avatarContainer"

@@ -77,11 +77,15 @@ router.get("/testMove", (req, res) => {
 
 router.get("/player", auth.ensureLoggedIn, (req, res) => {
   logic.getPlayer(req.user._id, res);
-        });
+});
 
 router.get("/requestTurn", auth.ensureLoggedIn, (req,  res) => {
   logic.requestTurn(req.user._id, res);
-        });
+ });
+
+ router.get("/requestMoreTime", auth.ensureLoggedIn, (req,  res) => {
+  logic.requestMoreTime(req.user._id, res);
+ });
 
 router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
   const userId = req.user._id;

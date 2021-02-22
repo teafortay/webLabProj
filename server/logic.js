@@ -67,7 +67,6 @@ const getPlayer = (userId, res) => {
 };
 
 const incrementTurn = (curPlayerUserId) => {
-  console.log("incrementTurn()");
   Player.find({}).then((players) => {
     // determine if any players are active
     const playersActive = ( players.find((p) => !p.ghost) != undefined ); // javascript find
@@ -99,7 +98,6 @@ const incrementTurn = (curPlayerUserId) => {
 };
 
 const requestTurn = (userId, res) => {
-  console.log("requestTurn()");
   Player.find({userId: userId}).then((players) => {
     if (players.length === 0) {
       return res.status(409).send({ err: "Can not find user" }); 
@@ -128,11 +126,30 @@ const requestTurn = (userId, res) => {
   });
 };
 
+const requestMoreTime = (userId, res) => {
+  //get player
+  Player.find({userId: userId}).then((players) => {
+    if (players.length === 0) {
+      return res.status(401).send({ err: "Can't find player with id:"+userId}); //works?
+    }
+    const player = players[0];  
+    if (!player.isTurn) {
+      return res.status(401).send({ err: "not your turn" }); //works?
+    }
+    clearTimer();
+    const waitMS = countDownToGhostTurn(false, 25000);
+    socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player, timer: waitMS});
+    res.send({result: "approved"});
+  });
+}
+
 const startTurn = (userId, res, ghost) => {
   //get player
-  console.log("startTurn()");
   Player.find({userId: userId}).then((players) => {
-    const player = players[0]; //TODO handle empty 
+    if (players.length === 0) {
+      return res.status(401).send({ err: "Can't find player with id:"+userId}); //works?
+    }
+    const player = players[0];
     if (!player.isTurn || player.didStartTurn) {
       return res.status(401).send({ err: "not your turn" }); //works?
     }
@@ -180,7 +197,7 @@ const startTurn = (userId, res, ghost) => {
       player.save().then((player) => {
         result.player = player; //display player bank
         res.send(result); 
-        const waitMS = countDownToGhostTurn(ghost, endTurn);
+        const waitMS = countDownToGhostTurn(ghost);
         socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player, timer: waitMS});
       })
     }); //space.find.then
@@ -188,7 +205,6 @@ const startTurn = (userId, res, ghost) => {
 };
 
 const endTurn = (userId, res, boughtProperty, ghost) => {
-  console.log("endTurn()");
   //get player
   Player.find({userId: userId}).then((players) => {
     const player = players[0]; //TODO check nonempty?
@@ -240,14 +256,16 @@ const closeoutPlayer = (player, res) => {
   });
 };
 
-const countDownToGhostTurn = (ghost) => {
-  console.log("countDownToGhostTurn("+ghost+")");
+const countDownToGhostTurn = (ghost, requestedTime) => {
   // exit if timer already set
   if (timer) {
     console.log("Timer already set");
     return 0;
   }
-  const waitMS = ghost ? 5000 : 12000;
+  let waitMS = ghost ? 5000 : 12000;
+  if (typeof requestedTime != "undefined") {
+    waitMS = requestedTime;
+  }
   console.log("Setting timer: "+ waitMS);
   timer = setTimeout(() => {
     timer = null;
@@ -279,6 +297,7 @@ const clearTimer = () => {
 module.exports = {
   getPlayer,
   requestTurn,
+  requestMoreTime,
   startTurn,
   endTurn,
 }
