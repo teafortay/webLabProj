@@ -9,8 +9,7 @@ import { socket } from "../../client-socket.js"
 import "./Game.css";
 import "./Profile.css";
 import Dice from "../modules/Dice.js";
-//import player from "../../../../server/models/player.js";
-
+import CountDown from "../modules/CountDown.js";
 
 const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
 
@@ -31,6 +30,7 @@ class Game extends Component {
                     name: "", money: 0, location: 0, 
                     isTurn: false, didStartTurn: false, ghost: true},
       gameStatus: "hold",
+      timer: 0,
     }
   }
 
@@ -62,6 +62,7 @@ class Game extends Component {
             didStartTurn: boolean, 
             ghost: boolean
           }
+          timer: integer in miliseconds
         }
      */
     socket.on("newTurn", (result) => {
@@ -84,6 +85,7 @@ class Game extends Component {
         mePlayer: mePlayer, 
         turnPlayer: result.turnPlayer,
         gameStatus: result.gameStatus,
+        timer: result.timer,
       });
 
     });
@@ -173,7 +175,7 @@ class Game extends Component {
           />
         </div>
 
-        <div>{this.getTurnMessage()}</div>
+        <div>{this.getTurnMessage()} <CountDown seconds={this.state.timer/1000} /></div>
 
         <div
           className="Profile-avatarContainer"
@@ -181,11 +183,6 @@ class Game extends Component {
           hidden={!(this.state.mePlayer.isTurn && !this.state.mePlayer.didStartTurn)}
         >
           <div className="Profile-avatar" />
-        </div>
-        <div>
-          Game status: {this.state.gameStatus}, 
-          mePlayer.isTurn: {this.state.mePlayer.isTurn ? "true" : "false"},  
-          mePlayer.didStartTurn: {this.state.mePlayer.didStartTurn ? "true" : "false"}
         </div>
         <button
           type="submit"

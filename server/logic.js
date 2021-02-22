@@ -76,7 +76,7 @@ const incrementTurn = (curPlayerUserId) => {
       const dummyPlayer = {userId: "", 
                           name: "", money: 0, location: 0, 
                           isTurn: false, didStartTurn: false, ghost: true}
-      socketManager.getIo().emit("newTurn", {gameStatus: "hold", turnPlayer: dummyPlayer});
+      socketManager.getIo().emit("newTurn", {gameStatus: "hold", turnPlayer: dummyPlayer, timer: 0});
       return;
     };
 
@@ -89,8 +89,8 @@ const incrementTurn = (curPlayerUserId) => {
         console.log("nextPlayer="+nextPlayer.name+" "+nextPlayer.ghost);
         nextPlayer.isTurn = true;
         nextPlayer.save().then((nextPlayer) => {
-          countDownToGhostTurn(nextPlayer.ghost);
-          socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: nextPlayer});
+          const waitMS = countDownToGhostTurn(nextPlayer.ghost);
+          socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: nextPlayer, timer: waitMS});
         });
         break;
       } 
@@ -107,21 +107,21 @@ const requestTurn = (userId, res) => {
     const curPlayer = players[0];
     curPlayer.ghost = false; // turn off ghost mode
     Player.find({isTurn: true}).then((isTurnPlayers) => {
-      
+      let waitMS = 0;
       if (isTurnPlayers.length === 0) {
         // no player has the turn 
         // set turn to requesting player and start timer
-          curPlayer.isTurn = true;
-          countDownToGhostTurn(curPlayer.ghost);
+        curPlayer.isTurn = true;
+        waitMS = countDownToGhostTurn(curPlayer.ghost);
       } else {
         // make sure timer is set for player with the turn
         // should only be needed when data is bad and needs cleanup
-        countDownToGhostTurn(isTurnPlayers[0].ghost);
+        waitMS = countDownToGhostTurn(isTurnPlayers[0].ghost);
       }
       curPlayer.save().then((player) => {
         res.send(player);
         if (player.isTurn) {
-          socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player});
+          socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player, timer: waitMS});
         }
       });
     });
@@ -180,8 +180,8 @@ const startTurn = (userId, res, ghost) => {
       player.save().then((player) => {
         result.player = player; //display player bank
         res.send(result); 
-        socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player});
-        countDownToGhostTurn(ghost, endTurn);
+        const waitMS = countDownToGhostTurn(ghost, endTurn);
+        socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player, timer: waitMS});
       })
     }); //space.find.then
   }); //player.find.then
@@ -245,9 +245,9 @@ const countDownToGhostTurn = (ghost) => {
   // exit if timer already set
   if (timer) {
     console.log("Timer already set");
-    return;
+    return 0;
   }
-  const waitMS = ghost ? 9000 : 12000;
+  const waitMS = ghost ? 5000 : 12000;
   console.log("Setting timer: "+ waitMS);
   timer = setTimeout(() => {
     timer = null;
@@ -265,6 +265,7 @@ const countDownToGhostTurn = (ghost) => {
       }
     });
   }, waitMS);
+  return waitMS;
 };
 
 const clearTimer = () => {
