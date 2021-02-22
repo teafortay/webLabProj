@@ -21,12 +21,15 @@ class Game extends Component {
     
     // Initialize Default State
     const turnMessage = this.getTurnMessage("hold", false, "");
-    console
     this.state = {
       spaces: [],
       dice: 0,
-      turnMessage: turnMessage,
-      player : {money: 0, location: 0, isTurn: false, didStartTurn: false, ghost: true},
+      mePlayer : {userId: this.props.userId, 
+                  name: "", money: 0, location: 0, 
+                  isTurn: false, didStartTurn: false, ghost: true},
+      turnPlayer: { userId: "", 
+                    name: "", money: 0, location: 0, 
+                    isTurn: false, didStartTurn: false, ghost: true},
       gameStatus: "hold",
     }
   }
@@ -36,56 +39,84 @@ class Game extends Component {
     this.updateBoard();
     
     get("api/player").then((playerObj) => {
-      let turnMessage = this.getTurnMessage(this.state.gameStatus, playerObj.isTurn, "");
+      let turnPlayer = this.state.turnPlayer;
+      if (playerObj.isTurn) {
+        turnPlayer = playerObj;
+      }
       this.setState({
-        player: playerObj,
-        turnMessage: turnMessage,
+        mePlayer: playerObj,
+        turnPlayer: turnPlayer,
       });
     });
 
+    /**
+     * Recieves result object with format:
+     *  {
+     *    gameStatus: <active or hold>, 
+     *    turnPlayer: {
+     *      userId: string, 
+            name: string, 
+            money: integer, 
+            location: integer, 
+            isTurn: boolean, 
+            didStartTurn: boolean, 
+            ghost: boolean
+          }
+        }
+     */
     socket.on("newTurn", (result) => {
       console.log("^^^ newTurn data" + JSON.stringify(result));
       //update board
       this.updateBoard();
 
       // update turn display
-      let curPlayer = this.state.player;
-      let turnMessage = "";
-      if (result.gameStatus === "active") {
-        let userHasTurn = result.player.userId === this.props.userId ? true : false;
-        turnMessage = this.getTurnMessage("active", userHasTurn, result.player.name);
-        if (userHasTurn) {
-          curPlayer = result.player; // update state player below with updated player record
-        }
-      } else {
-        curPlayer.isTurn = false;
-        curPlayer.didStartTurn = false;
-        turnMessage = this.getTurnMessage(result.gameStatus, false, "");
+      let mePlayer = this.state.mePlayer;
+      if (result.gameStatus === "active" && result.turnPlayer.userId === this.state.mePlayer.userId) {
+        mePlayer = result.turnPlayer; // updates mePlayer below with updated player record
+      } 
+      // clear turn values to make sure mePlayer cannot play when game is on hold
+      if (result.gameStatus === "hold") {
+        mePlayer.isTurn = false;
+        mePlayer.didStartTurn = false;
       }
 
       this.setState({
-        turnMessage: turnMessage,
-        player: curPlayer, 
+        mePlayer: mePlayer, 
+        turnPlayer: result.turnPlayer,
         gameStatus: result.gameStatus,
       });
 
-    }); // componentDidMount()
+    });
 
   } // componentDidMount()
 
-  getTurnMessage(gameStatus, curPlayerIsTurn, playerName="")  {
+  getTurnMessage() {
     let outMessage = "";
-    if (gameStatus === "active") {
-      if (curPlayerIsTurn) {
-        outMessage = "it's your turn! Roll the dice.";
+    // handle early call to this function before state is set
+    if (typeof this.state === 'undefined') {
+      return "this.state is undefined";
+    }
+
+    if (this.state.gameStatus === "active") {
+      if (this.state.mePlayer.userId === this.state.turnPlayer.userId) {
+        if (this.state.mePlayer.didStartTurn) {
+          outMessage = "End you turn."
+        } else {
+          outMessage = "it's your turn! Roll the dice.";
+        }
       } else {
-        if (playerName != "") {
-          outMessage = "It's " + playerName + "'s turn.";
+        if (this.state.turnPlayer.name != "") {
+          outMessage = "It's " + this.state.turnPlayer.name + "'s turn.";
+          if (this.state.turnPlayer.didStartTurn) {
+            outMessage += " Waiting for them to end their turn."
+          } else {
+            outMessage += " Waiting for them to start their turn."
+          }
         } else {
           outMessage = "It's another player's turn.";
         }
       }
-    } else if (gameStatus === "hold") {
+    } else if (this.state.gameStatus === "hold") {
       outMessage = "Game on hold. Request a turn to resume play."
     }
     return outMessage;
@@ -109,7 +140,7 @@ class Game extends Component {
       console.log(JSON.stringify(result));
       this.setState({
         dice: result.dice,
-        player: result.player,
+        mePlayer: result.player,
       })
       
     });
@@ -119,7 +150,7 @@ class Game extends Component {
     console.log("*******");
     post("api/endTurn", {boughtProperty: boughtProperty}).then((player) => {
       this.setState({
-        player: player
+        mePlayer: player
       });
       this.updateBoard();
       console.log("api/endTurn response: "+JSON.stringify(player));
@@ -142,19 +173,19 @@ class Game extends Component {
           />
         </div>
 
-        <div>{this.state.turnMessage}</div>
+        <div>{this.getTurnMessage()}</div>
 
         <div
           className="Profile-avatarContainer"
           onClick={() => { this.startTurn(); }}
-          hidden={!(this.state.player.isTurn && !this.state.player.didStartTurn)}
+          hidden={!(this.state.mePlayer.isTurn && !this.state.mePlayer.didStartTurn)}
         >
           <div className="Profile-avatar" />
         </div>
         <div>
           Game status: {this.state.gameStatus}, 
-          isTurn: {this.state.player.isTurn ? "true" : "false"},  
-          didStartTurn: {this.state.player.didStartTurn ? "true" : "false"}
+          mePlayer.isTurn: {this.state.mePlayer.isTurn ? "true" : "false"},  
+          mePlayer.didStartTurn: {this.state.mePlayer.didStartTurn ? "true" : "false"}
         </div>
         <button
           type="submit"
@@ -168,7 +199,7 @@ class Game extends Component {
           type="submit"
           value="Submit"
           onClick={() => {this.endTurn(true);}}
-          hidden={!(this.state.player.isTurn && this.state.player.didStartTurn)}
+          hidden={!(this.state.mePlayer.isTurn && this.state.mePlayer.didStartTurn)}
         >
           Buy and End Turn
         </button>
@@ -177,7 +208,7 @@ class Game extends Component {
           type="submit"
           value="Submit"
           onClick={() => {this.endTurn(false);}}
-          hidden={!(this.state.player.isTurn && this.state.player.didStartTurn)}
+          hidden={!(this.state.mePlayer.isTurn && this.state.mePlayer.didStartTurn)}
         >
           End Turn
         </button>
@@ -193,7 +224,7 @@ class Game extends Component {
             <h4 className="Profile-subTitle">Your game stats:</h4>
             <div id="profile-description">
               <p>You currently own:{this.state.playerProperties}</p>
-              <p>You currenty have: ${this.state.player.money}</p>
+              <p>You currenty have: ${this.state.mePlayer.money}</p>
             </div>
           </div>
           <div className="Profile-subContainer u-textCenter">
@@ -202,7 +233,7 @@ class Game extends Component {
           </div>
           <div className="Profile-subContainer u-textCenter">
             <h4 className="Profile-subTitle">Your current location:</h4>
-            <div id="favorite-cat">{this.state.spaces.filter(s => s._id === this.state.player.location)
+            <div id="favorite-cat">{this.state.spaces.filter(s => s._id === this.state.mePlayer.location)
               .map((s) =>
               <SingleSpace
               key={`SingleSpace_${s._id}`}

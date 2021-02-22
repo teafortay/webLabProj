@@ -73,7 +73,10 @@ const incrementTurn = (curPlayerUserId) => {
     const playersActive = ( players.find((p) => !p.ghost) != undefined ); // javascript find
     console.log("playersActive="+playersActive);
     if (!playersActive) { 
-      socketManager.getIo().emit("newTurn", {gameStatus: "hold"});
+      const dummyPlayer = {userId: "", 
+                          name: "", money: 0, location: 0, 
+                          isTurn: false, didStartTurn: false, ghost: true}
+      socketManager.getIo().emit("newTurn", {gameStatus: "hold", turnPlayer: dummyPlayer});
       return;
     };
 
@@ -87,7 +90,7 @@ const incrementTurn = (curPlayerUserId) => {
         nextPlayer.isTurn = true;
         nextPlayer.save().then((nextPlayer) => {
           countDownToGhostTurn(nextPlayer.ghost);
-          socketManager.getIo().emit("newTurn", {gameStatus: "active", player: nextPlayer});
+          socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: nextPlayer});
         });
         break;
       } 
@@ -118,7 +121,7 @@ const requestTurn = (userId, res) => {
       curPlayer.save().then((player) => {
         res.send(player);
         if (player.isTurn) {
-          socketManager.getIo().emit("newTurn", {gameStatus: "active", player: player});
+          socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player});
         }
       });
     });
@@ -177,7 +180,7 @@ const startTurn = (userId, res, ghost) => {
       player.save().then((player) => {
         result.player = player; //display player bank
         res.send(result); 
-        socketManager.getIo().emit("newTurn", {gameStatus: "active", player: player});
+        socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player});
         countDownToGhostTurn(ghost, endTurn);
       })
     }); //space.find.then
