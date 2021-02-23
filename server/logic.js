@@ -70,7 +70,6 @@ const incrementTurn = (curPlayerUserId) => {
   Player.find({}).then((players) => {
     // determine if any players are active
     const playersActive = ( players.find((p) => !p.ghost) != undefined ); // javascript find
-    console.log("playersActive="+playersActive);
     if (!playersActive) { 
       const dummyPlayer = {userId: "", 
                           name: "", money: 0, location: 0, 
@@ -85,7 +84,6 @@ const incrementTurn = (curPlayerUserId) => {
         // find next player
         let nextTurnIndex = index + 1 >= players.length ? 0 : index + 1;
         const nextPlayer = players[nextTurnIndex];
-        console.log("nextPlayer="+nextPlayer.name+" "+nextPlayer.ghost);
         nextPlayer.isTurn = true;
         nextPlayer.save().then((nextPlayer) => {
           const waitMS = countDownToGhostTurn(nextPlayer.ghost);
@@ -160,48 +158,67 @@ const startTurn = (userId, res, ghost) => {
     //roll dice, get new location- add GO money
     const result = movePlayer(oldLoc);
     player.location = result.newLoc;
-    if (result.passGO) {
+    if (result.passGO && !player.ghost) {
       player.money += 200;
     };
+    console.log(player.name+" moved to "+result.newLoc);
     //query database for new location space
     Space.find({space_id: result.newLoc}).then((dBSpaces) => {
+      let playerSavedInHandleRent = false;
       const s = board.spaces.find((staticS) => result.newLoc === staticS._id); //js find
       if (dBSpaces.length > 0) {
+        // space found in database
         const dBSpace = dBSpaces[0];
         if (dBSpace.owner === BANK && s.cost <= player.money) { //TODO recycling
-          //buy
+          // user can buy it
           result.canBuy = true; 
         } else if (dBSpace.ownerId !== userId) {
-          result.paidRent = true;
-          //pay rent - update user money
-          const rent = dBSpace.numberOfBooths * s.rentPerBooth;
-          player.money -= rent; //TODO player has enogh money
-          if (player.money <= 0) {
-            //Player.deleteOne({userId: req.user._id}).then((p) => console.log("you ran out of money"));
-          }
-          //update owner money
-          Player.find({userId: dBSpace.ownerId}).then((owners) => {
-            if (owners) {
-              const owner = owners[0]; 
-            owner.money += rent;
-            owner.save(); //TODO notify owner client
-            }
-            
-          });
-        }
-      } else  if (s.canOwn && s.cost <= player.money) {
-        //space not found in database
+          playerSavedInHandleRent = true;
+          handleRent(player, ghost, dBSpace, result, res, s);
+        } 
+      } else if (s.canOwn && s.cost <= player.money) {
+        //can own and space not found in database
         result.canBuy = true; 
       }
-      //update database
-      player.save().then((player) => {
-        result.player = player; //display player bank
-        res.send(result); 
-        const waitMS = countDownToGhostTurn(ghost);
-        socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player, timer: waitMS});
-      })
+      if (!playerSavedInHandleRent) {
+        savePlayer(player, res, result, ghost);
+      }
     }); //space.find.then
   }); //player.find.then
+};
+
+const handleRent = (player, ghost, dBSpace, result, res, s) => {
+  //get property owner player record
+  Player.find({userId: dBSpace.ownerId}).then((owners) => {
+    if (owners.length > 0) {
+      const owner = owners[0]; 
+      if (!owner.ghost) {
+        // owner actively playing, must pay rent
+        result.paidRent = true;
+        const rent = dBSpace.numberOfBooths * s.rentPerBooth;
+        player.money -= rent; //TODO player has enogh money
+        if (player.money <= 0) {
+          //Player.deleteOne({userId: req.user._id}).then((p) => console.log("you ran out of money"));
+        }
+        //update owner money
+        const owner = owners[0]; 
+        owner.money += rent;
+        owner.save(); //TODO notify owner client
+      }
+    } else {
+      console.log("Data Error: Can find owner "+dBSpace.ownerId+" for space "+s.name);
+    }
+    savePlayer(player, res, result, ghost);
+  });
+}
+
+const savePlayer = (player, res, result, ghost) => {
+  player.save().then((player) => {
+    result.player = player; //display player bank
+    res.send(result); 
+    const waitMS = countDownToGhostTurn(ghost);
+    socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player, timer: waitMS});
+  });
 };
 
 const endTurn = (userId, res, boughtProperty, ghost) => {
@@ -262,7 +279,7 @@ const countDownToGhostTurn = (ghost, requestedTime) => {
     console.log("Timer already set");
     return 0;
   }
-  let waitMS = ghost ? 5000 : 12000;
+  let waitMS = ghost ? 5000 : 15000;
   if (typeof requestedTime != "undefined") {
     waitMS = requestedTime;
   }
@@ -289,7 +306,7 @@ const countDownToGhostTurn = (ghost, requestedTime) => {
 const clearTimer = () => {
   if (timer) {
     clearTimeout(timer);
-    console.log("Clearing timer");
+    //console.log("Clearing timer");
     timer = null;
   }
 };

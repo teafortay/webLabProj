@@ -22,6 +22,7 @@ class Game extends Component {
     const turnMessage = this.getTurnMessage("hold", false, "");
     this.state = {
       spaces: [],
+      canBuy: false,
       dice: 0,
       mePlayer : {userId: this.props.userId, 
                   name: "", money: 0, location: 0, 
@@ -66,7 +67,7 @@ class Game extends Component {
         }
      */
     socket.on("newTurn", (result) => {
-      //console.log("^^^ newTurn data" + JSON.stringify(result));
+      console.log("-*- newTurn data" + JSON.stringify(result));
       //update board
       this.updateBoard();
 
@@ -144,9 +145,10 @@ class Game extends Component {
   someVar=13;
   startTurn() {
     get("api/startTurn").then((result) => {
-      //console.log(JSON.stringify(result));
+      console.log("^V^ startTurn result: "+JSON.stringify(result));
       this.setState({
         dice: result.dice,
+        canBuy: result.canBuy,
         mePlayer: result.player,
       })
       
@@ -213,7 +215,7 @@ class Game extends Component {
           type="submit"
           value="Submit"
           onClick={() => {this.endTurn(true);}}
-          hidden={!(this.state.mePlayer.isTurn && this.state.mePlayer.didStartTurn)}
+          hidden={!(this.state.mePlayer.isTurn && this.state.mePlayer.didStartTurn && this.state.canBuy)}
         >
           Buy and End Turn
         </button>
