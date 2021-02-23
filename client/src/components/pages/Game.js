@@ -10,6 +10,7 @@ import "./Game.css";
 import "./Profile.css";
 import Dice from "../modules/Dice.js";
 import CountDown from "../modules/CountDown.js";
+import GameEvents from "../modules/GameEvents.js";
 
 const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
 
@@ -32,6 +33,7 @@ class Game extends Component {
                     isTurn: false, didStartTurn: false, ghost: true},
       gameStatus: "hold",
       timer: 0,
+      gameEvents: [],
     }
   }
 
@@ -50,48 +52,63 @@ class Game extends Component {
       });
     });
 
-    /**
-     * Recieves result object with format:
-     *  {
-     *    gameStatus: <active or hold>, 
-     *    turnPlayer: {
-     *      userId: string, 
-            name: string, 
-            money: integer, 
-            location: integer, 
-            isTurn: boolean, 
-            didStartTurn: boolean, 
-            ghost: boolean
-          }
-          timer: integer in miliseconds
-        }
-     */
+    
     socket.on("newTurn", (result) => {
-      console.log("-*- newTurn data" + JSON.stringify(result));
-      //update board
-      this.updateBoard();
+      this.handleNewTurnMessage(result);
+    });
 
-      // update turn display
-      let mePlayer = this.state.mePlayer;
-      if (result.gameStatus === "active" && result.turnPlayer.userId === this.state.mePlayer.userId) {
-        mePlayer = result.turnPlayer; // updates mePlayer below with updated player record
-      } 
-      // clear turn values to make sure mePlayer cannot play when game is on hold
-      if (result.gameStatus === "hold") {
-        mePlayer.isTurn = false;
-        mePlayer.didStartTurn = false;
-      }
-
+    socket.on("gameEvent", (result) => {
+      let currentDate = new Date();
+      let time = currentDate.toLocaleTimeString();
+      // currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
+      const eventsClone = [...this.state.gameEvents];
+      eventsClone.unshift(time+" "+result.event); // add to top of list
       this.setState({
-        mePlayer: mePlayer, 
-        turnPlayer: result.turnPlayer,
-        gameStatus: result.gameStatus,
-        timer: result.timer,
+        gameEvents: eventsClone,
       });
-
     });
 
   } // componentDidMount()
+
+  /**
+   * Recieves result object with format:
+   *  {
+   *    gameStatus: <active or hold>, 
+   *    turnPlayer: {
+   *      userId: string, 
+          name: string, 
+          money: integer, 
+          location: integer, 
+          isTurn: boolean, 
+          didStartTurn: boolean, 
+          ghost: boolean
+        }
+        timer: integer in miliseconds
+      }
+    */
+  handleNewTurnMessage(result) {
+    //console.log("-*- newTurn data" + JSON.stringify(result));
+    //update board
+    this.updateBoard();
+
+    // update turn display
+    let mePlayer = this.state.mePlayer;
+    if (result.gameStatus === "active" && result.turnPlayer.userId === this.state.mePlayer.userId) {
+      mePlayer = result.turnPlayer; // updates mePlayer below with updated player record
+    } 
+    // clear turn values to make sure mePlayer cannot play when game is on hold
+    if (result.gameStatus === "hold") {
+      mePlayer.isTurn = false;
+      mePlayer.didStartTurn = false;
+    }
+
+    this.setState({
+      mePlayer: mePlayer, 
+      turnPlayer: result.turnPlayer,
+      gameStatus: result.gameStatus,
+      timer: result.timer,
+    });
+  }
 
   getTurnMessage() {
     let outMessage = "";
@@ -145,7 +162,7 @@ class Game extends Component {
   someVar=13;
   startTurn() {
     get("api/startTurn").then((result) => {
-      console.log("^V^ startTurn result: "+JSON.stringify(result));
+      //console.log("^V^ startTurn result: "+JSON.stringify(result));
       this.setState({
         dice: result.dice,
         canBuy: result.canBuy,
@@ -195,7 +212,6 @@ class Game extends Component {
             Get More Time
           </button>
         </div>
-
         <div
           className="Profile-avatarContainer"
           onClick={() => { this.startTurn(); }}
@@ -219,7 +235,6 @@ class Game extends Component {
         >
           Buy and End Turn
         </button>
-
         <button
           type="submit"
           value="Submit"
@@ -228,7 +243,7 @@ class Game extends Component {
         >
           End Turn
         </button>
-
+          
         <hr className="Profile-line" />
 
         <h2 className="Profile-name u-textCenter">{this.props.userName}</h2>
@@ -263,6 +278,7 @@ class Game extends Component {
               </div>
           </div>
         </div>
+        <GameEvents events={this.state.gameEvents} />
       </>
 
 

@@ -138,6 +138,8 @@ const requestMoreTime = (userId, res) => {
     const waitMS = countDownToGhostTurn(false, 25000);
     socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player, timer: waitMS});
     res.send({result: "approved"});
+    let message = player.name+" requested more time";
+    socketManager.getIo().emit("gameEvent", {event: message});
   });
 }
 
@@ -182,6 +184,11 @@ const startTurn = (userId, res, ghost) => {
       }
       if (!playerSavedInHandleRent) {
         savePlayer(player, res, result, ghost);
+        let message = player.name+" rolled "+result.dice+" and moved to "+s.name;
+        if (result.canBuy) {
+          message += " which is up for sale";
+        }
+        socketManager.getIo().emit("gameEvent", {event: message});
       }
     }); //space.find.then
   }); //player.find.then
@@ -192,10 +199,12 @@ const handleRent = (player, ghost, dBSpace, result, res, s) => {
   Player.find({userId: dBSpace.ownerId}).then((owners) => {
     if (owners.length > 0) {
       const owner = owners[0]; 
+      result.ownerName = owner.name;
       if (!owner.ghost) {
         // owner actively playing, must pay rent
         result.paidRent = true;
         const rent = dBSpace.numberOfBooths * s.rentPerBooth;
+        result.rentAmount = rent;
         player.money -= rent; //TODO player has enogh money
         if (player.money <= 0) {
           //Player.deleteOne({userId: req.user._id}).then((p) => console.log("you ran out of money"));
@@ -204,11 +213,19 @@ const handleRent = (player, ghost, dBSpace, result, res, s) => {
         const owner = owners[0]; 
         owner.money += rent;
         owner.save(); //TODO notify owner client
-      }
+      } 
     } else {
       console.log("Data Error: Can find owner "+dBSpace.ownerId+" for space "+s.name);
+      result.ownerName = "unknown";
     }
     savePlayer(player, res, result, ghost);
+    let message = player.name+" rolled "+result.dice+" and moved to "+s.name+" owned by "+result.ownerName;
+    if (result.paidRent) {
+      message += " and paid rent of "+result.rentAmount;
+    } else {
+      message += " but paid no rent";
+    }
+    socketManager.getIo().emit("gameEvent", {event: message});
   });
 }
 
@@ -259,9 +276,13 @@ const endTurn = (userId, res, boughtProperty, ghost) => {
           newSpace.save();
         } //TODO turns DONE?
         closeoutPlayer(player, res);
+        let message = player.name+" ended their turn by purchasing "+space.name+" for "+space.cost;
+        socketManager.getIo().emit("gameEvent", {event: message});
       }); //space.find.then
     } else { ///if not bought property 
       closeoutPlayer(player, res);
+      let message = player.name+" ended their turn on "+space.name;
+      socketManager.getIo().emit("gameEvent", {event: message});
     }
   }); //player.find.then
 }
