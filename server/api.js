@@ -76,39 +76,26 @@ router.get("/testMove", (req, res) => {
 });
 
 router.get("/player", auth.ensureLoggedIn, (req, res) => {
-  Player.find({userId:req.user._id}).then((players) => {
-    if (players.length === 0) {
-      Player.find({}).then((allPlayers) => {
-        const turn = allPlayers.length > 0 ? false: true;
-        const newPlayer = new Player({
-          userId: req.user._id,
-          name: req.user.name,
-          money: 2500,
-          location: 0,
-          isTurn: turn,
-          didStartTurn: false,
-          ghost: false,
-        });
-        newPlayer.save().then((player) => {
-          res.send(player);
-        });
-      }); //player.find.then
-    } else {
-      res.send(players[0])
-    }
-  });
+  logic.getPlayer(req.user._id, res);
 });
 
+router.get("/requestTurn", auth.ensureLoggedIn, (req,  res) => {
+  logic.requestTurn(req.user._id, res);
+ });
+
+ router.get("/requestMoreTime", auth.ensureLoggedIn, (req,  res) => {
+  logic.requestMoreTime(req.user._id, res);
+ });
+
 router.get("/startTurn", auth.ensureLoggedIn, (req, res) => {
-  
   const userId = req.user._id;
-  logic.startTurn(userId, res);
+  logic.startTurn(userId, res, false);
 });
 
 router.post("/endTurn", auth.ensureLoggedIn, (req, res) => {
  const userId = req.user._id;
  const boughtProperty = req.body.boughtProperty
- logic.endTurn(userId, boughtProperty, res);
+ logic.endTurn(userId, res, boughtProperty, false);
 });//end of post
 
 // anything else falls to this "not found" case
@@ -116,12 +103,6 @@ router.all("*", (req, res) => {
   console.log(`API route not found: ${req.method} ${req.url}`);
   res.status(404).send({ msg: "API route not found" });
 });
-
-const ghostMove = () => {
-
-};
-
-
 
 module.exports = router;
 
