@@ -19,8 +19,24 @@ let timer = null;
 const rollDice = () => {
     const rand = Math.random();
     const diceRoll = (Math.floor(rand * 11) + 2);
-
     return diceRoll;
+  };
+
+  const getRandomLoc = () => {
+    const rand = Math.random();
+    const randomLoc = (Math.floor(rand * 40));
+    return randomLoc;
+  };
+
+  const getTreasure = () => {
+    const rand = Math.random();
+    const treasure = (Math.floor(rand * 300));
+    const rand1 = Math.random();
+    if (rand1 < 0.5) {
+      return (0 - treasure); 
+    } else {
+      return treasure;
+    }
   };
 
 const movePlayer =(playerLoc) => {
