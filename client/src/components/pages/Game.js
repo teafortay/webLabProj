@@ -254,7 +254,7 @@ class Game extends Component {
           <div className="Profile-subContainer u-textCenter">
             <h4 className="Profile-subTitle">Your game stats:</h4>
             <div id="profile-description">
-              <p>You currently own:{this.state.playerProperties}</p>
+            
               <p>You currenty have: ${this.state.mePlayer.money}</p>
             </div>
           </div>
