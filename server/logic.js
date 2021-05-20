@@ -33,7 +33,7 @@ const rollDice = () => {
     const treasure = (Math.floor(rand * 300));
     const rand1 = Math.random();
     if (rand1 < 0.5) {
-      return (0 - treasure); 
+      return (0 - treasure); // correct way?
     } else {
       return treasure;
     }
@@ -47,7 +47,7 @@ const movePlayer =(playerLoc) => {
   if (newLoc >= boardLength) {
     newLoc -= boardLength;
     passGO = true;
-  }
+  } 
   return {
     newLoc: newLoc,
     dice: diceRollResult,
