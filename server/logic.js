@@ -174,53 +174,58 @@ const startTurn = (userId, res, ghost) => {
     player.didStartTurn = true;
     const oldLoc = player.location;
     //roll dice, get new location- add GO money
-    const result = movePlayer(oldLoc);
-    player.location = result.newLoc;
-    if (result.passGO && !player.ghost) {
+    const moveResult = movePlayer(oldLoc);
+    player.location = moveResult.newLoc;
+    if (moveResult.passGO && !player.ghost) {
       player.money += 200;
     };
-    console.log(player.name+" moved to "+result.newLoc);
+    console.log(player.name+" moved to "+moveResult.newLoc);
     //query database for new location space
-    Space.find({space_id: result.newLoc}).then((dBSpaces) => {
-      let playerSavedInHandleRent = false;
-      const s = board.spaces.find((staticS) => result.newLoc === staticS._id); //js find
-      if (dBSpaces.length > 0) {
-        // space found in database
-        const dBSpace = dBSpaces[0];
-        if (dBSpace.owner === BANK && s.cost <= player.money) { //TODO recycling
-          // user can buy it
-          result.canBuy = true; 
-        } else if (dBSpace.ownerId !== userId) {
-          playerSavedInHandleRent = true;
-          handleRent(player, ghost, dBSpace, result, res, s);
-        } 
-      } else if (s.canOwn && s.cost <= player.money) {
-        //can own and space not found in database
-        result.canBuy = true; 
-      }
-      if (!playerSavedInHandleRent) {
-        savePlayer(player, res, result, ghost);
-        let message = player.name+" rolled "+result.dice+" and moved to "+s.name;
-        if (result.canBuy) {
-          message += " which is up for sale";
-        }
-        socketManager.getIo().emit("gameEvent", {event: message});
-      }
+    Space.find({space_id: moveResult.newLoc}).then((dBSpaces) => {
+      movePlayerToSpace(res, player, dbSpaces, moveResult);
     }); //space.find.then
   }); //player.find.then
 };
 
-const handleRent = (player, ghost, dBSpace, result, res, s) => {
+const movePlayerToSpace = (res, player, dbSpaces, moveResult) => {
+  let playerSavedInHandleRent = false;
+  const boardSpace = board.spaces.find((staticS) => moveResult.newLoc === staticS._id); //js find
+  
+  if (dBSpaces.length > 0) {
+    // space found in database
+    const dBSpace = dBSpaces[0];
+    if (dBSpace.owner === BANK && boardSpace.cost <= player.money) { //TODO recycling
+      // user can buy it
+      moveResult.canBuy = true; 
+    } else if (dBSpace.ownerId !== userId) {
+      playerSavedInHandleRent = true;
+      handleRent(player, dBSpace, moveResult, res, boardSpace);
+    } 
+  } else if (boardSpace.canOwn && boardSpace.cost <= player.money) {
+    //can own and space not found in database
+    moveResult.canBuy = true; 
+  }
+  if (!playerSavedInHandleRent) {
+    savePlayer(player, res, moveResult);
+    let message = player.name+" rolled "+moveResult.dice+" and moved to "+moveResult.name;
+    if (moveResult.canBuy) {
+      message += " which is up for sale";
+    }
+    socketManager.getIo().emit("gameEvent", {event: message});
+  }
+}
+
+const handleRent = (player, dBSpace, moveResult, res, s) => {
   //get property owner player record
   Player.find({userId: dBSpace.ownerId}).then((owners) => {
     if (owners.length > 0) {
       const owner = owners[0]; 
-      result.ownerName = owner.name;
+      moveResult.ownerName = owner.name;
       if (!owner.ghost) {
         // owner actively playing, must pay rent
-        result.paidRent = true;
+        moveResult.paidRent = true;
         const rent = dBSpace.numberOfBooths * s.rentPerBooth;
-        result.rentAmount = rent;
+        mnoveResult.rentAmount = rent;
         player.money -= rent; //TODO player has enogh money
         if (player.money <= 0) {
           //Player.deleteOne({userId: req.user._id}).then((p) => console.log("you ran out of money"));
@@ -232,12 +237,12 @@ const handleRent = (player, ghost, dBSpace, result, res, s) => {
       } 
     } else {
       console.log("Data Error: Can find owner "+dBSpace.ownerId+" for space "+s.name);
-      result.ownerName = "unknown";
+      moveResult.ownerName = "unknown";
     }
-    savePlayer(player, res, result, ghost);
-    let message = player.name+" rolled "+result.dice+" and moved to "+s.name+" owned by "+result.ownerName;
-    if (result.paidRent) {
-      message += " and paid rent of "+result.rentAmount;
+    savePlayer(player, res, moveResult);
+    let message = player.name+" rolled "+result.dice+" and moved to "+s.name+" owned by "+moveResult.ownerName;
+    if (moveResult.paidRent) {
+      message += " and paid rent of "+moveResult.rentAmount;
     } else {
       message += " but paid no rent";
     }
@@ -245,11 +250,11 @@ const handleRent = (player, ghost, dBSpace, result, res, s) => {
   });
 }
 
-const savePlayer = (player, res, result, ghost) => {
+const savePlayer = (player, res, moveResult) => {
   player.save().then((player) => {
-    result.player = player; //display player bank
-    res.send(result); 
-    const waitMS = countDownToGhostTurn(ghost);
+    moveResult.player = player; //display player bank
+    res.send(moveResult); 
+    const waitMS = countDownToGhostTurn(player.ghost);
     socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player, timer: waitMS});
   });
 };
