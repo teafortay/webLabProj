@@ -3,6 +3,7 @@ const GO = "Go";
 const COMMUNITY_CHEST = "Treasure Chest";
 const CHANCE = "Tim's Tour";
 const JAIL = "Go to Jail";
+const FREE_PARKING = "Free Parking";
 
 const board = {
   spaces: [
@@ -89,7 +90,7 @@ const board = {
       color: "LightBlue",
     }, {
       _id: 10,
-      name: "Jail",
+      name: JAIL,
       canOwn: false,
     }, {
       _id: 11,
@@ -171,7 +172,7 @@ const board = {
       color: "DarkOrange",
     }, {
       _id: 20,
-      name: "Free Parking",
+      name: FREE_PARKING,
       canOwn: false,
     }, {
       _id: 21,
@@ -344,4 +345,5 @@ module.exports = {
   CHANCE,
   COMMUNITY_CHEST,
   JAIL,
+  FREE_PARKING,
 };

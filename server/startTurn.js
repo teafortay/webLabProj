@@ -54,7 +54,7 @@ const handleRent = (player, dBSpace, moveResult, res) => {
 
 const buildAndEmitStartTurnGameEventMessage = (player, moveResult) => {
   // build and emit gameEvent message
-  let message = player.name+" rolled "+moveResult.dice.die1+", "+moveResult.dice.die2+" and moved to "+moveResult.name;
+  let message = player.name+" rolled "+moveResult.dice.die1+", "+moveResult.dice.die2+" and moved to "+moveResult.boardSpace.name;
   if (moveResult.canBuy) {
     message += " which is up for sale";
   } 
@@ -106,9 +106,8 @@ const handleMoveToOwnableSpace = (res, player, moveResult) => {
 }
 
 const rollDice = () => {
-    const rand = Math.random();
-    const die1 = (Math.floor(rand * 6) + 1);
-    const die2 = (Math.floor(rand * 6) + 1);
+    const die1 = (Math.floor(Math.random() * 6) + 1);
+    const die2 = (Math.floor(Math.random() * 6) + 1);
     const diceRoll = {
         die1: die1,
         die2: die2,
@@ -155,20 +154,19 @@ const startTurn = (player, res, ghost, countDownToGhostTurn) => {
   
   // handle move to new space
   switch(moveResult.boardSpace.name) {
+    // TODO: Debug non-buyable spaces.
     case staticSpaces.GO:
-      console.log("switch(moveResult.boardSpace.name):GO");
+    case staticSpaces.FREE_PARKING:
       savePlayer(player, res, moveResult);
       break;
     case staticSpaces.COMMUNITY_CHEST:
-      console.log("switch(moveResult.boardSpace.name):CC");
       savePlayer(player, res, moveResult);
       break;
     case staticSpaces.CHANCE:
-      console.log("switch(moveResult.boardSpace.name):CHANCE");
       savePlayer(player, res, moveResult);
       break;
     case staticSpaces.JAIL:
-      console.log("switch(moveResult.boardSpace.name):JAIL");
+      savePlayer(player, res, moveResult);
       break;
     default:
       if (moveResult.boardSpace.canOwn) {
