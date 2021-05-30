@@ -164,7 +164,7 @@ class Game extends Component {
     get("api/startTurn").then((result) => {
       //console.log("^V^ startTurn result: "+JSON.stringify(result));
       this.setState({
-        dice: result.dice,
+        dice: result.dice.total,
         canBuy: result.canBuy,
         mePlayer: result.player,
       })
