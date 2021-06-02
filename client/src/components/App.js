@@ -8,6 +8,7 @@ import "../utilities.css";
 import { socket } from "../client-socket.js";
 
 import { get, post } from "../utilities";
+import Rules from "./pages/Rules.js";
 
 /**
  * Define the "App" component as a class.
@@ -67,6 +68,9 @@ class App extends Component {
             userName={this.state.userName}
           />
           <NotFound default />
+          <Rules
+          path="/rules"
+          />
         </Router>
       </>
     );
