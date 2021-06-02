@@ -2,13 +2,13 @@ import React, { Component } from "react";
 import { Router } from "@reach/router";
 import NotFound from "./pages/NotFound.js";
 import Skeleton from "./pages/Skeleton.js";
+import Rules from "./pages/Rules.js";
 
 import "../utilities.css";
 
 import { socket } from "../client-socket.js";
 
 import { get, post } from "../utilities";
-import Rules from "./pages/Rules.js";
 
 /**
  * Define the "App" component as a class.
@@ -69,7 +69,7 @@ class App extends Component {
           />
           <NotFound default />
           <Rules
-          path="/rules"
+            path="/rules"
           />
         </Router>
       </>
