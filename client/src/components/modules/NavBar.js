@@ -17,7 +17,7 @@ class NavBar extends Component {
         <div className="NavBar-title u-inlineBlock">MITopoly</div>
         <div className="NavBar-linkContainer u-inlineBlock">
           <Link to="/" className="NavBar-link">
-            Home
+            Game
           </Link>
           <Link to="/rules/" className="NavBar-link">
             Rules
