@@ -142,6 +142,18 @@ const rollDice = () => {
 const movePlayer = (player) => {
   let passGO = false;
   const diceRoll = rollDice();
+
+  // handle chance turn
+  let chanceTurn = false;
+  const currentBoardSpace = board.spaces.find((staticSpace) => player.location === staticSpace._id); //js find
+  if (currentBoardSpace.name === staticSpaces.CHANCE) {
+    diceRoll.die1 = getRandomLoc();
+    diceRoll.die2 = 0;
+    diceRoll.isDouble = false;
+    diceRoll.total = diceRoll.die1;
+    chanceTurn = true;
+  }
+
   let newLoc = Number(player.location) + diceRoll.total;
   if (player.jailTurns > 0) {
     newLoc = staticSpaces.JAIL_ID;
@@ -161,6 +173,7 @@ const movePlayer = (player) => {
       ownerName: BANK,
       boardSpace: boardSpace,
       gotOutOfJail: false,
+      chanceTurn: chanceTurn,
   };
 };
 
@@ -189,6 +202,7 @@ const startTurn = (res, player, ghost, countDownToGhostTurn) => {
       jail(res, player, moveResult);
       break;
     case staticSpaces.CHANCE:
+      player.didStartTurn = false;  // allows player to role again
       savePlayer(res, player, moveResult);
       break;
     case staticSpaces.GO_TO_JAIL:    

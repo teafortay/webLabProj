@@ -11,7 +11,7 @@ import "./Profile.css";
 import Dice from "../modules/Dice.js";
 import CountDown from "../modules/CountDown.js";
 import GameEvents from "../modules/GameEvents.js";
-import { COMMUNITY_CHEST } from "../../../../server/staticSpaces.js";
+import { COMMUNITY_CHEST, CHANCE } from "../../../../server/staticSpaces.js";
 
 const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
 
@@ -144,16 +144,22 @@ class Game extends Component {
 
   getEndTurnMessage() {
     if (this.state.spaces.length > 0) {
-      // console.log(this.state.spaces);
-      // console.log(this.state.mePlayer.location);
       const space = this.state.spaces.find((s) => this.state.mePlayer.location === s._id);
-      // console.log(space);
-      // console.log(COMMUNITY_CHEST);
       if (space.name === COMMUNITY_CHEST) {
         return "Claim your Treasure!";
       }
     }
     return "End Turn";
+  }
+
+  getTurnClassName() {
+    if (this.state.spaces.length > 0) {
+      const space = this.state.spaces.find((s) => this.state.mePlayer.location === s._id);
+      if (space.name === CHANCE) {
+        return "Profile-chance";
+      }
+    }
+    return "Profile-dice";
   }
 
   updateBoard() {
@@ -228,11 +234,11 @@ class Game extends Component {
           </button>
         </div>
         <div
-          className="Profile-avatarContainer"
+          className="Profile-turnContainer"
           onClick={() => { this.startTurn(); }}
           hidden={!(this.state.mePlayer.isTurn && !this.state.mePlayer.didStartTurn)}
         >
-          <div className="Profile-avatar" />
+          <div className={this.getTurnClassName()} />
         </div>
         <button
           type="submit"
