@@ -1,8 +1,6 @@
 import React, { Component } from "react";
-import GoogleLogin from "react-google-login";
 import "./Landing.css";
 
-const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
 
 class Landing extends Component {
   constructor(props) {
@@ -18,18 +16,12 @@ class Landing extends Component {
   render() {
     return (
       <>
-       <GoogleLogin
-          clientId={CLIENT_ID}
-          buttonText="Login"
-          onSuccess={this.props.handleLogin}
-          onFailure={(err) => console.log(err)}
-        />
-
+       
         <h1>Welcome to MITopoly!</h1>
         <h2>An infinite Monopoly-like game for MIT! Inspired by the infinite coorridor!</h2>
       
         <h2> How does this work?</h2>
-        <h4>Log in to play MITopoly by yourself (Coming soon: with friends!)</h4>
+        <h4>Log in to play MITopoly</h4>
         <h2>Just like regular monopoly except:</h2>
         <ul>
           <li>Board spaces are locations at MIT!</li>
