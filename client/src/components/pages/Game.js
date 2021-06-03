@@ -11,6 +11,7 @@ import "./Profile.css";
 import Dice from "../modules/Dice.js";
 import CountDown from "../modules/CountDown.js";
 import GameEvents from "../modules/GameEvents.js";
+import { COMMUNITY_CHEST } from "../../../../server/staticSpaces.js";
 
 const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
 
@@ -141,6 +142,20 @@ class Game extends Component {
     return outMessage;
   }
 
+  getEndTurnMessage() {
+    if (this.state.spaces.length > 0) {
+      // console.log(this.state.spaces);
+      // console.log(this.state.mePlayer.location);
+      const space = this.state.spaces.find((s) => this.state.mePlayer.location === s._id);
+      // console.log(space);
+      // console.log(COMMUNITY_CHEST);
+      if (space.name === COMMUNITY_CHEST) {
+        return "Claim your Treasure!";
+      }
+    }
+    return "End Turn";
+  }
+
   updateBoard() {
     get("/api/board").then((spaceObjs) => {
       this.setState({spaces: spaceObjs});
@@ -241,7 +256,7 @@ class Game extends Component {
           onClick={() => {this.endTurn(false);}}
           hidden={!(this.state.mePlayer.isTurn && this.state.mePlayer.didStartTurn)}
         >
-          End Turn
+          {this.getEndTurnMessage()}
         </button>
           
         <hr className="Profile-line" />

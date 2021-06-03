@@ -16,6 +16,17 @@ const dummyRes = {send: () => {}};//don't need statu?
 // timer used to make ghost turns
 let timer = null;
 
+const getTreasure = () => {
+  const rand = Math.random();
+  const treasure = (Math.floor(rand * 300));
+  const rand1 = Math.random();
+  if (rand1 < 0.5) {
+    return (0 - treasure); 
+  } else {
+    return treasure;
+  }
+};
+
 const getPlayer = (userId, res) => {
   // Search for this player
   Player.find({userId: userId}).then((players) => {
@@ -184,6 +195,17 @@ const endTurn = (userId, res, boughtProperty, ghost) => {
         socketManager.getIo().emit("gameEvent", {event: message});
       }); //space.find.then
     } else { ///if not bought property 
+      if (space.name === staticSpaces.COMMUNITY_CHEST) {
+        const amt = getTreasure();
+        player.money += amt;
+        let message = "";
+        if (amt > 0) {
+          message = player.name+" got $"+ amt + " from "+staticSpaces.COMMUNITY_CHEST+". Yea!";
+        } else {
+          message = player.name+" lost $"+ amt + " from "+staticSpaces.COMMUNITY_CHEST+". Awww!";
+        }
+        socketManager.getIo().emit("gameEvent", {event: message});
+      }
       closeoutPlayer(player, res);
     }
   }); //player.find.then

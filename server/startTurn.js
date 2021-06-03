@@ -13,17 +13,6 @@ const getRandomLoc = () => {
   const randomLoc = (Math.floor(rand * 40));
   return randomLoc;
 };
-
-const getTreasure = () => {
-  const rand = Math.random();
-  const treasure = (Math.floor(rand * 300));
-  const rand1 = Math.random();
-  if (rand1 < 0.5) {
-    return (0 - treasure); 
-  } else {
-    return treasure;
-  }
-};
   
 const handleRent = (res, player, moveResult, dBSpace) => {
   //get property owner player record
@@ -193,13 +182,11 @@ const startTurn = (res, player, ghost, countDownToGhostTurn) => {
     // TODO: Debug non-buyable spaces.
     case staticSpaces.GO:
     case staticSpaces.FREE_PARKING:
+    case staticSpaces.COMMUNITY_CHEST:  // handled in endturn()
       savePlayer(res, player, moveResult);
       break;
     case staticSpaces.JAIL:
       jail(res, player, moveResult);
-      break;
-    case staticSpaces.COMMUNITY_CHEST:
-      savePlayer(res, player, moveResult);
       break;
     case staticSpaces.CHANCE:
       savePlayer(res, player, moveResult);
