@@ -3,6 +3,8 @@ import { Router } from "@reach/router";
 import NotFound from "./pages/NotFound.js";
 import Skeleton from "./pages/Skeleton.js";
 import Rules from "./pages/Rules.js";
+import NavBar from "./modules/NavBar.js";
+
 
 import "../utilities.css";
 
@@ -59,6 +61,7 @@ class App extends Component {
   render() {
     return (
       <>
+        <NavBar />
         <Router>
           <Skeleton
             path="/"
