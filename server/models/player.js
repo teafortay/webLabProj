@@ -8,6 +8,7 @@ const PlayerSchema = new mongoose.Schema({
   isTurn: Boolean,
   didStartTurn: Boolean,
   ghost: Boolean,
+  jailTurns: Number,
 });
 
 // compile model from schema

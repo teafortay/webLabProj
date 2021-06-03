@@ -7,54 +7,24 @@ const Player = require("./models/player");
 const Space = require("./models/space");
 
 const staticSpaces = require("./staticSpaces");
+const startTurnHandler= require("./startTurn");
 
 const board = staticSpaces.board;
-const BANK = staticSpaces.BANK;
 
 const dummyRes = {send: () => {}};//don't need statu?
 
 // timer used to make ghost turns
 let timer = null;
 
-const rollDice = () => {
-    const rand = Math.random();
-    const diceRoll = (Math.floor(rand * 11) + 2);
-    return diceRoll;
-  };
-
-  const getRandomLoc = () => {
-    const rand = Math.random();
-    const randomLoc = (Math.floor(rand * 40));
-    return randomLoc;
-  };
-
-  const getTreasure = () => {
-    const rand = Math.random();
-    const treasure = (Math.floor(rand * 300));
-    const rand1 = Math.random();
-    if (rand1 < 0.5) {
-      return (0 - treasure); // correct way?
-    } else {
-      return treasure;
-    }
-  };
-
-const movePlayer =(playerLoc) => {
-  let passGO = false;
-  const diceRollResult = rollDice();
-  let newLoc = Number(playerLoc) + diceRollResult;
-  const boardLength = 40; //not dynamic
-  if (newLoc >= boardLength) {
-    newLoc -= boardLength;
-    passGO = true;
-  } 
-  return {
-    newLoc: newLoc,
-    dice: diceRollResult,
-    passGO: passGO,
-    canBuy: false,
-    paidRent: false,
-  };
+const getTreasure = () => {
+  const rand = Math.random();
+  const treasure = (Math.floor(rand * 300));
+  const rand1 = Math.random();
+  if (rand1 < 0.5) {
+    return (0 - treasure); 
+  } else {
+    return treasure;
+  }
 };
 
 const getPlayer = (userId, res) => {
@@ -70,6 +40,7 @@ const getPlayer = (userId, res) => {
         isTurn: false,
         didStartTurn: false,
         ghost: false,
+        jailTurns: 0,
       });
       newPlayer.save().then((player) => {
         res.send(player);
@@ -163,94 +134,14 @@ const startTurn = (userId, res, ghost) => {
   //get player
   Player.find({userId: userId}).then((players) => {
     if (players.length === 0) {
-      return res.status(401).send({ err: "Can't find player with id:"+userId}); //works?
+        return res.status(401).send({ err: "Can't find player with id:"+userId}); //works?
     }
     const player = players[0];
     if (!player.isTurn || player.didStartTurn) {
-      return res.status(401).send({ err: "not your turn" }); //works?
+        return res.status(401).send({ err: "not your turn" }); //works?
     }
     clearTimer();
-    player.ghost = ghost;
-    player.didStartTurn = true;
-    const oldLoc = player.location;
-    //roll dice, get new location- add GO money
-    const result = movePlayer(oldLoc);
-    player.location = result.newLoc;
-    if (result.passGO && !player.ghost) {
-      player.money += 200;
-    };
-    console.log(player.name+" moved to "+result.newLoc);
-    //query database for new location space
-    Space.find({space_id: result.newLoc}).then((dBSpaces) => {
-      let playerSavedInHandleRent = false;
-      const s = board.spaces.find((staticS) => result.newLoc === staticS._id); //js find
-      if (dBSpaces.length > 0) {
-        // space found in database
-        const dBSpace = dBSpaces[0];
-        if (dBSpace.owner === BANK && s.cost <= player.money) { //TODO recycling
-          // user can buy it
-          result.canBuy = true; 
-        } else if (dBSpace.ownerId !== userId) {
-          playerSavedInHandleRent = true;
-          handleRent(player, ghost, dBSpace, result, res, s);
-        } 
-      } else if (s.canOwn && s.cost <= player.money) {
-        //can own and space not found in database
-        result.canBuy = true; 
-      }
-      if (!playerSavedInHandleRent) {
-        savePlayer(player, res, result, ghost);
-        let message = player.name+" rolled "+result.dice+" and moved to "+s.name;
-        if (result.canBuy) {
-          message += " which is up for sale";
-        }
-        socketManager.getIo().emit("gameEvent", {event: message});
-      }
-    }); //space.find.then
-  }); //player.find.then
-};
-
-const handleRent = (player, ghost, dBSpace, result, res, s) => {
-  //get property owner player record
-  Player.find({userId: dBSpace.ownerId}).then((owners) => {
-    if (owners.length > 0) {
-      const owner = owners[0]; 
-      result.ownerName = owner.name;
-      if (!owner.ghost) {
-        // owner actively playing, must pay rent
-        result.paidRent = true;
-        const rent = dBSpace.numberOfBooths * s.rentPerBooth;
-        result.rentAmount = rent;
-        player.money -= rent; //TODO player has enogh money
-        if (player.money <= 0) {
-          //Player.deleteOne({userId: req.user._id}).then((p) => console.log("you ran out of money"));
-        }
-        //update owner money
-        const owner = owners[0]; 
-        owner.money += rent;
-        owner.save(); //TODO notify owner client
-      } 
-    } else {
-      console.log("Data Error: Can find owner "+dBSpace.ownerId+" for space "+s.name);
-      result.ownerName = "unknown";
-    }
-    savePlayer(player, res, result, ghost);
-    let message = player.name+" rolled "+result.dice+" and moved to "+s.name+" owned by "+result.ownerName;
-    if (result.paidRent) {
-      message += " and paid rent of "+result.rentAmount;
-    } else {
-      message += " but paid no rent";
-    }
-    socketManager.getIo().emit("gameEvent", {event: message});
-  });
-}
-
-const savePlayer = (player, res, result, ghost) => {
-  player.save().then((player) => {
-    result.player = player; //display player bank
-    res.send(result); 
-    const waitMS = countDownToGhostTurn(ghost);
-    socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player, timer: waitMS});
+    startTurnHandler.startTurn(res, player, ghost, countDownToGhostTurn);
   });
 };
 
@@ -270,6 +161,14 @@ const endTurn = (userId, res, boughtProperty, ghost) => {
     player.isTurn = false;
     player.didStartTurn = false;
     clearTimer();
+    
+    // handle moving player to jail
+    if (player.location === staticSpaces.GO_TO_JAIL_ID) {
+      player.location = staticSpaces.JAIL_ID;
+      let message = player.name+" ended their turn in "+staticSpaces.JAIL;
+      socketManager.getIo().emit("gameEvent", {event: message});
+    }
+    
     //handle buying property
     const space = board.spaces.find((staticS) => player.location === staticS._id); //js find
       
@@ -296,9 +195,18 @@ const endTurn = (userId, res, boughtProperty, ghost) => {
         socketManager.getIo().emit("gameEvent", {event: message});
       }); //space.find.then
     } else { ///if not bought property 
+      if (space.name === staticSpaces.COMMUNITY_CHEST) {
+        const amt = getTreasure();
+        player.money += amt;
+        let message = "";
+        if (amt > 0) {
+          message = player.name+" got $"+ amt + " from "+staticSpaces.COMMUNITY_CHEST+". Yea!";
+        } else {
+          message = player.name+" lost $"+ amt + " from "+staticSpaces.COMMUNITY_CHEST+". Awww!";
+        }
+        socketManager.getIo().emit("gameEvent", {event: message});
+      }
       closeoutPlayer(player, res);
-      let message = player.name+" ended their turn on "+space.name;
-      socketManager.getIo().emit("gameEvent", {event: message});
     }
   }); //player.find.then
 }
@@ -316,11 +224,11 @@ const countDownToGhostTurn = (ghost, requestedTime) => {
     console.log("Timer already set");
     return 0;
   }
-  let waitMS = ghost ? 5000 : 15000;
+  let waitMS = ghost ? 3000 : 15000;
   if (typeof requestedTime != "undefined") {
     waitMS = requestedTime;
   }
-  console.log("Setting timer: "+ waitMS);
+  //console.log("Setting timer: "+ waitMS);
   timer = setTimeout(() => {
     timer = null;
     // get layer whose turn it is
@@ -354,4 +262,6 @@ module.exports = {
   requestMoreTime,
   startTurn,
   endTurn,
+  countDownToGhostTurn,
+  clearTimer,
 }
