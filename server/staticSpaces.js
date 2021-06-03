@@ -2,7 +2,10 @@ const BANK = "MIT";
 const GO = "Go";
 const COMMUNITY_CHEST = "Treasure Chest";
 const CHANCE = "Tim's Tour";
-const JAIL = "Go to Jail";
+const JAIL = "Jail";
+const JAIL_ID = 10;
+const GO_TO_JAIL = "Go to Jail";
+const GO_TO_JAIL_ID = 30;
 const FREE_PARKING = "Free Parking";
 
 const board = {
@@ -89,7 +92,7 @@ const board = {
       numberOfBooths: 0,
       color: "LightBlue",
     }, {
-      _id: 10,
+      _id: JAIL_ID,
       name: JAIL,
       canOwn: false,
     }, {
@@ -253,8 +256,8 @@ const board = {
       numberOfBooths: 0,
       color: "Gold",
     }, {
-      _id: 30,
-      name: JAIL,
+      _id: GO_TO_JAIL_ID,
+      name: GO_TO_JAIL,
       canOwn: false
     }, {
         _id: 31,
@@ -345,5 +348,8 @@ module.exports = {
   CHANCE,
   COMMUNITY_CHEST,
   JAIL,
+  JAIL_ID,
+  GO_TO_JAIL,
+  GO_TO_JAIL_ID,
   FREE_PARKING,
 };

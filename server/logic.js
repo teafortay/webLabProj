@@ -10,7 +10,6 @@ const staticSpaces = require("./staticSpaces");
 const startTurnHandler= require("./startTurn");
 
 const board = staticSpaces.board;
-const BANK = staticSpaces.BANK;
 
 const dummyRes = {send: () => {}};//don't need statu?
 
@@ -30,6 +29,7 @@ const getPlayer = (userId, res) => {
         isTurn: false,
         didStartTurn: false,
         ghost: false,
+        jailTurns: 0,
       });
       newPlayer.save().then((player) => {
         res.send(player);
@@ -130,7 +130,7 @@ const startTurn = (userId, res, ghost) => {
         return res.status(401).send({ err: "not your turn" }); //works?
     }
     clearTimer();
-    startTurnHandler.startTurn(player, res, ghost, countDownToGhostTurn);
+    startTurnHandler.startTurn(res, player, ghost, countDownToGhostTurn);
   });
 };
 
@@ -150,6 +150,14 @@ const endTurn = (userId, res, boughtProperty, ghost) => {
     player.isTurn = false;
     player.didStartTurn = false;
     clearTimer();
+    
+    // handle moving player to jail
+    if (player.location === staticSpaces.GO_TO_JAIL_ID) {
+      player.location = staticSpaces.JAIL_ID;
+      let message = player.name+" ended their turn in "+staticSpaces.JAIL;
+      socketManager.getIo().emit("gameEvent", {event: message});
+    }
+    
     //handle buying property
     const space = board.spaces.find((staticS) => player.location === staticS._id); //js find
       
@@ -177,8 +185,6 @@ const endTurn = (userId, res, boughtProperty, ghost) => {
       }); //space.find.then
     } else { ///if not bought property 
       closeoutPlayer(player, res);
-      let message = player.name+" ended their turn on "+space.name;
-      socketManager.getIo().emit("gameEvent", {event: message});
     }
   }); //player.find.then
 }
@@ -196,11 +202,11 @@ const countDownToGhostTurn = (ghost, requestedTime) => {
     console.log("Timer already set");
     return 0;
   }
-  let waitMS = ghost ? 5000 : 15000;
+  let waitMS = ghost ? 3000 : 15000;
   if (typeof requestedTime != "undefined") {
     waitMS = requestedTime;
   }
-  console.log("Setting timer: "+ waitMS);
+  //console.log("Setting timer: "+ waitMS);
   timer = setTimeout(() => {
     timer = null;
     // get layer whose turn it is
