@@ -11,6 +11,7 @@ import "./Profile.css";
 import Dice from "../modules/Dice.js";
 import CountDown from "../modules/CountDown.js";
 import GameEvents from "../modules/GameEvents.js";
+import { COMMUNITY_CHEST, CHANCE } from "../../../../server/staticSpaces.js";
 
 const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
 
@@ -141,6 +142,26 @@ class Game extends Component {
     return outMessage;
   }
 
+  getEndTurnMessage() {
+    if (this.state.spaces.length > 0) {
+      const space = this.state.spaces.find((s) => this.state.mePlayer.location === s._id);
+      if (space.name === COMMUNITY_CHEST) {
+        return "Claim your Treasure!";
+      }
+    }
+    return "End Turn";
+  }
+
+  getTurnClassName() {
+    if (this.state.spaces.length > 0) {
+      const space = this.state.spaces.find((s) => this.state.mePlayer.location === s._id);
+      if (space.name === CHANCE) {
+        return "Profile-chance";
+      }
+    }
+    return "Profile-dice";
+  }
+
   updateBoard() {
     get("/api/board").then((spaceObjs) => {
       this.setState({spaces: spaceObjs});
@@ -164,7 +185,7 @@ class Game extends Component {
     get("api/startTurn").then((result) => {
       //console.log("^V^ startTurn result: "+JSON.stringify(result));
       this.setState({
-        dice: result.dice,
+        dice: result.dice.total,
         canBuy: result.canBuy,
         mePlayer: result.player,
       })
@@ -213,11 +234,11 @@ class Game extends Component {
           </button>
         </div>
         <div
-          className="Profile-avatarContainer"
+          className="Profile-turnContainer"
           onClick={() => { this.startTurn(); }}
           hidden={!(this.state.mePlayer.isTurn && !this.state.mePlayer.didStartTurn)}
         >
-          <div className="Profile-avatar" />
+          <div className={this.getTurnClassName()} />
         </div>
         <button
           type="submit"
@@ -241,7 +262,7 @@ class Game extends Component {
           onClick={() => {this.endTurn(false);}}
           hidden={!(this.state.mePlayer.isTurn && this.state.mePlayer.didStartTurn)}
         >
-          End Turn
+          {this.getEndTurnMessage()}
         </button>
           
         <hr className="Profile-line" />
