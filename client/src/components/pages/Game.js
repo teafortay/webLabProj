@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import GoogleLogin, { GoogleLogout } from "react-google-login";
 import Board from "../modules/Board.js";
 import SingleSpace from "../modules/SingleSpace.js";
 
@@ -12,7 +11,6 @@ import Dice from "../modules/Dice.js";
 import CountDown from "../modules/CountDown.js";
 import GameEvents from "../modules/GameEvents.js";
 
-const CLIENT_ID = "618465845830-amoicmialm8fckas9j0q65j8c30qiqg6.apps.googleusercontent.com";
 
 class Game extends Component {
 
@@ -185,12 +183,6 @@ class Game extends Component {
   render() {
     return (
       <>
-        <GoogleLogout
-            clientId={CLIENT_ID}
-            buttonText="Logout"
-            onLogoutSuccess={this.props.handleLogout}
-            onFailure={(err) => console.log(err)}
-          />
 
         <div>
           <Board

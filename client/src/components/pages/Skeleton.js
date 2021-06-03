@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import GoogleLogin, { GoogleLogout } from "react-google-login";
 
 import Landing from "./Landing.js";
 import Game from "./Game.js";
@@ -43,13 +42,11 @@ class Skeleton extends Component {
     //console.log(this.props.userId)
     if (this.props.userId) {
       return (<Game
-        handleLogout={this.props.handleLogout}
         userId={this.props.userId}
         userName={this.props.userName}
        />);
       } else {
         return (<Landing 
-          handleLogin={this.props.handleLogin} 
           />);
        }
   }
