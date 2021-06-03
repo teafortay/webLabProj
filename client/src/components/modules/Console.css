@@ -1,0 +1,8 @@
+.Console-userName {
+  font-size: 40px;
+  font-weight: 300;
+}
+
+.Console-line {
+  border-color: var(--grey);
+}

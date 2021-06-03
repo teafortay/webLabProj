@@ -8,6 +8,7 @@ import { socket } from "../../client-socket.js"
 import "./Game.css";
 import "./Profile.css";
 import Dice from "../modules/Dice.js";
+import Console from "../modules/Console.js";
 import CountDown from "../modules/CountDown.js";
 import GameEvents from "../modules/GameEvents.js";
 import { COMMUNITY_CHEST, CHANCE } from "../../../../server/staticSpaces.js";
@@ -211,20 +212,13 @@ class Game extends Component {
           />
         </div>
 
-        <div>
-          {this.getTurnMessage()} 
-          &nbsp;&nbsp;
-          <CountDown seconds={this.state.timer/1000} />
-          &nbsp;&nbsp;
-          <button
-            type="submit"
-            value="Submit"
-            onClick={this.requestMoreTime}
-            hidden={!(this.state.mePlayer.isTurn)}
-          >
-            Get More Time
-          </button>
-        </div>
+        <Console 
+          userName={this.props.userName}
+          turnMessage={this.getTurnMessage()}
+          timer={this.state.timer}
+          hideMoreTime={!(this.state.mePlayer.isTurn)}
+          requestMoreTimeCallback={this.requestMoreTime}
+        />
         <div
           className="Profile-turnContainer"
           onClick={() => { this.startTurn(); }}
@@ -256,12 +250,6 @@ class Game extends Component {
         >
           {this.getEndTurnMessage()}
         </button>
-          
-        <hr className="Profile-line" />
-
-        <h2 className="Profile-name u-textCenter">{this.props.userName}</h2>
-
-        <hr className="Profile-line" />
 
         <div className="u-flex">
           <div className="Profile-subContainer u-textCenter">
