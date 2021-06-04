@@ -41,17 +41,17 @@ class Console extends Component {
               Get More Time
             </button>
             <br />
-            <button type="submit" value="Submit"
+            <button type="submit" value="Submit" className="Console-button"
               onClick={this.props.requestATurnCallback}
               hidden={this.props.hideRequestATurn} >
               Request a Turn
             </button>
-            <button type="submit" value="Submit"
+            <button type="submit" value="Submit" className="Console-button"
               onClick={this.props.buyAndEndTurnCallback}
               hidden={this.props.hideBuyAndEndTurn} >
               Buy and End Turn
             </button>
-            <button type="submit" value="Submit"
+            <button type="submit" value="Submit" className="Console-button"
               onClick={this.props.endTurnCallback}
               hidden={this.props.hideEndTurn} >
               {this.props.endTurnMessage}

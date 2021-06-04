@@ -23,7 +23,7 @@ class Game extends Component {
     this.state = {
       spaces: [],
       canBuy: false,
-      dice: 0,
+      message: "",
       mePlayer : {userId: this.props.userId, 
                   name: "", money: 0, location: 0, 
                   isTurn: false, didStartTurn: false, ghost: true},
@@ -95,6 +95,7 @@ class Game extends Component {
     let mePlayer = this.state.mePlayer;
     if (result.gameStatus === "active" && result.turnPlayer.userId === this.state.mePlayer.userId) {
       mePlayer = result.turnPlayer; // updates mePlayer below with updated player record
+      this.setState({message:""}); // reset message
     } 
     // clear turn values to make sure mePlayer cannot play when game is on hold
     if (result.gameStatus === "hold") {
@@ -183,6 +184,7 @@ class Game extends Component {
     get("api/requestTurn").then((player) => {
       //console.log("get api/requestTurn result:"+JSON.stringify(player));
     });
+    this.setState({message:""})
   }
 
   requestMoreTime() {
@@ -196,7 +198,7 @@ class Game extends Component {
     get("api/startTurn").then((result) => {
       //console.log("^V^ startTurn result: "+JSON.stringify(result));
       this.setState({
-        dice: ""+result.dice.die1+", "+result.dice.die1,
+        message: result.playerMessage,
         canBuy: result.canBuy,
         mePlayer: result.player,
       })
@@ -205,9 +207,10 @@ class Game extends Component {
   }
 
   endTurn(boughtProperty) {
-    post("api/endTurn", {boughtProperty: boughtProperty}).then((player) => {
+    post("api/endTurn", {boughtProperty: boughtProperty}).then((result) => {
       this.setState({
-        mePlayer: player
+        mePlayer: result.player,
+        message: result.message,
       });
       this.updatePlayer();
       this.updateBoard();
@@ -242,18 +245,19 @@ class Game extends Component {
 
         <div className="u-flex" style={{height:"100px"}}>
           <div className="Profile-subContainer u-textCenter" >
+            <div className="u-textCenter"
+              hidden={(this.state.message === "")} >
+              <h4 className="Profile-subTitle">{this.state.message}</h4>
+            </div>
             <div
               className="Profile-turnContainer u-textCenter"
               onClick={() => { this.startTurn(); }}
               hidden={!(this.state.mePlayer.isTurn && !this.state.mePlayer.didStartTurn)} >
               <div className={this.getTurnClassName()} />
             </div>
-            <div className="u-textCenter"
-              hidden={(!this.state.mePlayer.isTurn || !this.state.mePlayer.didStartTurn)} >
-              <h4 className="Profile-subTitle">You rolled: {this.state.dice}</h4>
-            </div>
           </div>
         </div>
+        <hr className="Profile-line" />
         <div className="Game-margin">
           <GameEvents events={this.state.gameEvents} />
         </div>
