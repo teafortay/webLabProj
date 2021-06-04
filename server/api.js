@@ -76,7 +76,7 @@ router.get("/testMove", (req, res) => {
 });
 
 router.get("/player", auth.ensureLoggedIn, (req, res) => {
-  logic.getPlayer(req.user._id, res);
+  logic.getPlayer(req, res);
 });
 
 router.get("/requestTurn", auth.ensureLoggedIn, (req,  res) => {

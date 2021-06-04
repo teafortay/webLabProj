@@ -174,7 +174,7 @@ class Game extends Component {
     const userLocationHTML = this.state.spaces.filter(s => s._id === this.state.mePlayer.location).map((s) =>
       <span>
         <span>{s._id + ". "}</span>
-        <span style={{color: s.color}}>{s.name}</span>
+        <span>{s.name}</span>
       </span>
       );
     this.props.setUserDetailsCallback(this.state.mePlayer.money, userLocationHTML);

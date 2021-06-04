@@ -27,9 +27,9 @@ const getTreasure = () => {
   }
 };
 
-const getPlayer = (userId, res) => {
+const getPlayer = (req, res) => {
   // Search for this player
-  Player.find({userId: userId}).then((players) => {
+  Player.find({userId: req.user._id}).then((players) => {
     if (players.length === 0) {
       // player not found, make a new one and save
       const newPlayer = new Player({
