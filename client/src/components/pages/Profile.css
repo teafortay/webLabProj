@@ -4,15 +4,11 @@
   
 .Profile-dice {
   /* make it responsive */
-  max-width: 100%;
-  width: 50%;
-  height: auto;
+  max-width: 40%;
+  height: 80px;
   display: block;
   /* div height to be the same as width*/
-  padding-top: 50%;
-
-  /* make it a circle */
-  border-radius: 50%;
+  padding-top: 5%;
 
   /* Centering on image`s center*/
   background-position-y: center;
@@ -34,15 +30,12 @@
 
 .Profile-chance {
   /* make it responsive */
-  max-width: 100%;
-  width: 50%;
-  height: auto;
+  max-width: 40%;
+  height: 80px;
   display: block;
   /* div height to be the same as width*/
-  padding-top: 50%;
+  padding-top: 15%;
 
-  /* make it a circle */
-  border-radius: 50%;
 
   /* Centering on image`s center*/
   background-position-y: center;

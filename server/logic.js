@@ -161,12 +161,12 @@ const endTurn = (userId, res, boughtProperty, ghost) => {
     player.isTurn = false;
     player.didStartTurn = false;
     clearTimer();
-    
+
     // handle moving player to jail
     if (player.location === staticSpaces.GO_TO_JAIL_ID) {
       player.location = staticSpaces.JAIL_ID;
-      let message = player.name+" ended their turn in "+staticSpaces.JAIL;
-      socketManager.getIo().emit("gameEvent", {event: message});
+      let message = " ended their turn in "+staticSpaces.JAIL;
+      socketManager.getIo().emit("gameEvent", {event: player.name+message});
     }
     
     //handle buying property
@@ -190,30 +190,32 @@ const endTurn = (userId, res, boughtProperty, ghost) => {
           });
           newSpace.save();
         } //TODO turns DONE?
-        closeoutPlayer(player, res);
+        const closeOutMessage = "You bought "+space.name+" for "+space.cost;
+        closeoutPlayer(player, res, closeOutMessage);
         let message = player.name+" ended their turn by purchasing "+space.name+" for "+space.cost;
         socketManager.getIo().emit("gameEvent", {event: message});
       }); //space.find.then
     } else { ///if not bought property 
+      let message = "";
       if (space.name === staticSpaces.COMMUNITY_CHEST) {
         const amt = getTreasure();
         player.money += amt;
-        let message = "";
         if (amt > 0) {
-          message = player.name+" got $"+ amt + " from "+staticSpaces.COMMUNITY_CHEST+". Yea!";
+          message = " got $"+ amt + " from "+staticSpaces.COMMUNITY_CHEST+". Yea!";
         } else {
-          message = player.name+" lost $"+ amt + " from "+staticSpaces.COMMUNITY_CHEST+". Awww!";
+          message = " lost $"+ amt + " from "+staticSpaces.COMMUNITY_CHEST+". Awww!";
         }
-        socketManager.getIo().emit("gameEvent", {event: message});
+        socketManager.getIo().emit("gameEvent", {event: player.name+message});
+        message = "You"+message;
       }
-      closeoutPlayer(player, res);
+      closeoutPlayer(player, res, message);
     }
   }); //player.find.then
 }
 
-const closeoutPlayer = (player, res) => {
+const closeoutPlayer = (player, res, message) => {
   player.save().then((p) => {
-    res.send(p);
+    res.send({message: message, player: p});
     incrementTurn(p.userId);
   });
 };
@@ -224,7 +226,7 @@ const countDownToGhostTurn = (ghost, requestedTime) => {
     console.log("Timer already set");
     return 0;
   }
-  let waitMS = ghost ? 3000 : 15000;
+  let waitMS = ghost ? 5000 : 15000;
   if (typeof requestedTime != "undefined") {
     waitMS = requestedTime;
   }

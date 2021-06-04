@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { Router } from "@reach/router";
 import NotFound from "./pages/NotFound.js";
-import Skeleton from "./pages/Skeleton.js";
+import Game from "./pages/Game.js";
+import Landing from "./pages/Landing.js";
 import Rules from "./pages/Rules.js";
 import NavBar from "./modules/NavBar.js";
 
@@ -21,7 +22,9 @@ class App extends Component {
     super(props);
     this.state = {
       userId: undefined,
-      ueerName: undefined,
+      userName: undefined,
+      userMoney: 0,
+      userLocation: "",
     };
   }
 
@@ -34,6 +37,13 @@ class App extends Component {
           userName: user.name
         });
       }
+    });
+  }
+
+  setUserDetails = (money, locationHTML) => {
+    this.setState({
+      userMoney: money,
+      userLocation: locationHTML,
     });
   }
 
@@ -53,28 +63,42 @@ class App extends Component {
     console.log("just looged out");
     this.setState({
       userId: undefined,
-      userName: undefined
+      userName: undefined,
+      userMoney: "",
+      userLocation: ""
     });
     post("/api/logout");
   };
 
   render() {
+    let mainPage = (<> </>);
+    if (this.state.userId) {
+      mainPage = (
+        <Game
+          path="/"
+          userId={this.props.userId}
+          userName={this.props.userName}
+          setUserDetailsCallback={this.setUserDetails}
+        />);
+    } else {
+      mainPage = (
+        <Landing 
+          path="/"
+        />);
+    }
+
     return (
       <>
         <NavBar 
-        handleLogin={this.handleLogin}
-        handleLogout={this.handleLogout}
-        userId={this.state.userId}
-        userName={this.state.userName}
-      />
+          handleLogin={this.handleLogin}
+          handleLogout={this.handleLogout}
+          userId={this.state.userId}
+          userName={this.state.userName}
+          userMoney={this.state.userMoney}
+          userLocation={this.state.userLocation}
+        />
         <Router>
-          <Skeleton
-            path="/"
-            handleLogin={this.handleLogin}
-            handleLogout={this.handleLogout}
-            userId={this.state.userId}
-            userName={this.state.userName}
-          />
+          {mainPage}
           <NotFound default />
           <Rules
             path="/rules"

@@ -83,19 +83,27 @@ const goToJail = (res, player, moveResult) => {
   savePlayer(res, player, moveResult);
 };
 
-const buildAndEmitStartTurnGameEventMessage = (player, moveResult) => {
-  let message =  player.name+" rolled "+moveResult.dice.die1+", "+moveResult.dice.die2;
-  // build and emit gameEvent message
+const buildStartTurnGameEventMessage = (player, moveResult, nameOrYou) => {
+  let message =  "";
+  const isAre = (nameOrYou === "You") ? "are" : "is";
+  if (moveResult.dice.chanceTurn) {
+    message += nameOrYou+" moved "+moveResult.dice.total+" spaces";
+  } else {
+    message += nameOrYou+" rolled "+moveResult.dice.die1+", "+moveResult.dice.die2;
+  }
+  if (moveResult.passGO && !player.ghost) {
+    message += ", passed Go (+$200)";
+  }
   if (moveResult.boardSpace.name === staticSpaces.JAIL) {
     if (moveResult.gotOutOfJail) {
       message += " and got out of jail";
     } else if (player.jailTurns === 0) {
-      message += " and moved to Jail, but is just visiting";
+      message += " and moved to Jail, but "+isAre+" just visiting";
     } else {
-      message += " and is still in Jail";
+      message += " and "+isAre+" still in Jail";
     }
   } else if (moveResult.boardSpace.name === staticSpaces.GO_TO_JAIL) {
-    message += " and is going to Jail for 3 turns";
+    message += " and "+isAre+" going to Jail for 3 turns";
   } else {
     message += " and moved to "+moveResult.boardSpace.name;
     if (moveResult.canBuy) {
@@ -103,28 +111,31 @@ const buildAndEmitStartTurnGameEventMessage = (player, moveResult) => {
     } 
     if (moveResult.ownerName !== staticSpaces.BANK) {
       if (moveResult.ownerName === player.name) {
-        message += " which they own";
+        const youThey = (nameOrYou === "You") ? "You" : "they";
+        message += " which "+youThey+" own";
       } else {
         message += " owned by "+moveResult.ownerName;
         if (moveResult.paidRent) {
           message += " and paid rent of "+moveResult.rentAmount;
         } else {
-          message += " but paid no rent";
+          message += " but paid no rent since they are not active";
         }
       }
     } 
   }
-  socketManager.getIo().emit("gameEvent", {event: message});
+  return message;
 }
 
 const savePlayer = (res, player, moveResult) => {
   player.save().then((player) => {
     moveResult.player = player; //display player bank
+    moveResult.playerMessage = buildStartTurnGameEventMessage(player, moveResult, "You");
     res.send(moveResult); 
     const waitMS = countDownToGhostTurnCallback(player.ghost);
     socketManager.getIo().emit("newTurn", {gameStatus: "active", turnPlayer: player, timer: waitMS});
   });
-  buildAndEmitStartTurnGameEventMessage(player, moveResult);
+  const message = buildStartTurnGameEventMessage(player, moveResult, player.name);
+  socketManager.getIo().emit("gameEvent", {event: message});
 };
 
 const rollDice = () => {
@@ -135,6 +146,7 @@ const rollDice = () => {
       die2: die2,
       isDouble: die1 === die2 ? true : false,
       total: die1 + die2,
+      chanceTurn: false,
   };
   return diceRoll;
 };
@@ -151,7 +163,7 @@ const movePlayer = (player) => {
     diceRoll.die2 = 0;
     diceRoll.isDouble = false;
     diceRoll.total = diceRoll.die1;
-    chanceTurn = true;
+    diceRoll.chanceTurn = true;
   }
 
   let newLoc = Number(player.location) + diceRoll.total;

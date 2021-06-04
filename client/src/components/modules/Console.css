@@ -1,0 +1,18 @@
+.Console-userName {
+  font-size: 20px;
+  font-weight: 300;
+}
+
+.Console-line {
+  border-color: var(--grey);
+}
+
+.Console-button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 5px 32px;
+  text-align: center;
+  font-size: 16px;
+  margin: 4px 2px;
+}
