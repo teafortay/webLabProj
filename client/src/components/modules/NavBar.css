@@ -26,4 +26,21 @@
   .NavBar-link + .NavBar-link {
     margin-left: var(--m);
   }
+
+  .NavBar-login {
+    margin-left: var(--m);
+  }
+
+  .NavBar-staticText {
+    padding: var(--s) var(--m);
+    color: var(--white);
+    font-size: 17px;
+  }
+
+  .NavBar-playerText {
+    vertical-align: middle;
+    padding-left: 10px;
+    color: var(--white);
+    font-size: 17px;
+  }
   

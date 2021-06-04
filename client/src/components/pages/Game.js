@@ -13,7 +13,6 @@ import CountDown from "../modules/CountDown.js";
 import GameEvents from "../modules/GameEvents.js";
 import { COMMUNITY_CHEST, CHANCE } from "../../../../server/staticSpaces.js";
 
-
 class Game extends Component {
 
   constructor(props) {
@@ -50,6 +49,7 @@ class Game extends Component {
         mePlayer: playerObj,
         turnPlayer: turnPlayer,
       });
+      this.updatePlayer();
     });
 
     
@@ -108,6 +108,7 @@ class Game extends Component {
       gameStatus: result.gameStatus,
       timer: result.timer,
     });
+    this.updatePlayer();
   }
 
   getTurnMessage() {
@@ -166,7 +167,18 @@ class Game extends Component {
       this.setState({spaces: spaceObjs});
     });
   }
- 
+
+  updatePlayer() {
+    // use callback to set user details in NavBar via App.js
+    const userLocationHTML = this.state.spaces.filter(s => s._id === this.state.mePlayer.location).map((s) =>
+      <span>
+        <span>{s._id + ". "}</span>
+        <span style={{color: s.color}}>{s.name}</span>
+      </span>
+      );
+    this.props.setUserDetailsCallback(this.state.mePlayer.money, userLocationHTML);
+  }
+
   requestTurn() {
     get("api/requestTurn").then((player) => {
       //console.log("get api/requestTurn result:"+JSON.stringify(player));
@@ -188,7 +200,7 @@ class Game extends Component {
         canBuy: result.canBuy,
         mePlayer: result.player,
       })
-      
+      this.updatePlayer();
     });
   }
 
@@ -197,6 +209,7 @@ class Game extends Component {
       this.setState({
         mePlayer: player
       });
+      this.updatePlayer();
       this.updateBoard();
       //console.log("api/endTurn response: "+JSON.stringify(player));
     }); 
@@ -205,7 +218,6 @@ class Game extends Component {
   render() {
     return (
       <>
-
         <div>
           <Board
           spaces={this.state.spaces}
@@ -229,14 +241,6 @@ class Game extends Component {
         
 
         <div className="u-flex" style={{height:"100px"}}>
-          <div className="Profile-subContainer u-textCenter">
-            <h4 className="Profile-subTitle">Your game stats:</h4>
-            <div id="profile-description">
-            
-              <p>You currenty have: ${this.state.mePlayer.money}</p>
-            </div>
-          </div>
-          
           <div className="Profile-subContainer u-textCenter" >
             <div
               className="Profile-turnContainer u-textCenter"
@@ -245,31 +249,15 @@ class Game extends Component {
               <div className={this.getTurnClassName()} />
             </div>
             <div className="u-textCenter"
-              hidden={(this.state.mePlayer.isTurn && !this.state.mePlayer.didStartTurn)} >
+              hidden={(!this.state.mePlayer.isTurn || !this.state.mePlayer.didStartTurn)} >
               <h4 className="Profile-subTitle">You rolled: {this.state.dice}</h4>
             </div>
           </div>
-
-          <div className="Profile-subContainer u-textCenter">
-            <h4 className="Profile-subTitle">Your current location:</h4>
-            <div id="favorite-cat">{this.state.spaces.filter(s => s._id === this.state.mePlayer.location)
-              .map((s) =>
-              <SingleSpace
-              key={`SingleSpace_${s._id}`}
-              id = {s._id}
-              name={s.name}
-              color={s.color}
-              owner={s.owner}
-              numberOfBooths={s.numberOfBooths}
-            />
-          )}
-              </div>
-          </div>
         </div>
-        <GameEvents events={this.state.gameEvents} />
+        <div className="Game-margin">
+          <GameEvents events={this.state.gameEvents} />
+        </div>
       </>
-
-
     );
   }
 }
