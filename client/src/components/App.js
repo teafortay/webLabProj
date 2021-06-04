@@ -24,7 +24,7 @@ class App extends Component {
       userId: undefined,
       userName: undefined,
       userMoney: 0,
-      userLocation: "processing",
+      userLocation: "",
     };
   }
 
@@ -63,7 +63,9 @@ class App extends Component {
     console.log("just looged out");
     this.setState({
       userId: undefined,
-      userName: undefined
+      userName: undefined,
+      userMoney: "",
+      userLocation: ""
     });
     post("/api/logout");
   };

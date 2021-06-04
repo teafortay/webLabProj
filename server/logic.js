@@ -224,7 +224,7 @@ const countDownToGhostTurn = (ghost, requestedTime) => {
     console.log("Timer already set");
     return 0;
   }
-  let waitMS = ghost ? 3000 : 15000;
+  let waitMS = ghost ? 5000 : 15000;
   if (typeof requestedTime != "undefined") {
     waitMS = requestedTime;
   }

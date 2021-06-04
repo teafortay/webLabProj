@@ -40,10 +40,13 @@ class NavBar extends Component {
               className="NavBar-login"
             />
           )}
-          <div className="NavBar-playerText u-inlineBlock">
-              Player: {this.props.userName} - ${this.props.userMoney}<br />
-              Location: {this.props.userLocation}
-          </div>
+          {this.props.userId ? (
+            
+            <div className="NavBar-playerText u-inlineBlock">
+                Player: {this.props.userName} - ${this.props.userMoney}<br />
+                Location: {this.props.userLocation}
+            </div>
+          ):""}
         </div>
       </nav>
     );
