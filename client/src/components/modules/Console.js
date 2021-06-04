@@ -11,6 +11,13 @@ class Console extends Component {
     //  timer
     //  hideMoreTime
     //  requestMoreTimeCallback
+    //  requestATurnCallback
+    //  hideRequestATurn
+    //  buyAndEndTurnCallback
+    //  hideBuyAndEndTurn
+    //  endTurnCallback
+    //  hideEndTurn
+    //  endTurnMessage
     constructor(props) {
       super(props);
     }
@@ -23,24 +30,37 @@ class Console extends Component {
         <>
           <hr className="Profile-line" />
           <h2 className="Console-userName u-textCenter">{this.props.userName}</h2>
-          <hr className="Profile-line" />
           <div className="u-textCenter">
             {this.props.turnMessage} 
             &nbsp;&nbsp;
             <CountDown seconds={this.props.timer/1000} />
             &nbsp;&nbsp;
-            <button
-              type="submit"
-              value="Submit"
+            <button type="submit" value="Submit"
               onClick={this.props.requestMoreTimeCallback}
-              hidden={this.props.hideMoreTime}
-            >
+              hidden={this.props.hideMoreTime} >
               Get More Time
             </button>
+            <br />
+            <button type="submit" value="Submit"
+              onClick={this.props.requestATurnCallback}
+              hidden={this.props.hideRequestATurn} >
+              Request a Turn
+            </button>
+            <button type="submit" value="Submit"
+              onClick={this.props.buyAndEndTurnCallback}
+              hidden={this.props.hideBuyAndEndTurn} >
+              Buy and End Turn
+            </button>
+            <button type="submit" value="Submit"
+              onClick={this.props.endTurnCallback}
+              hidden={this.props.hideEndTurn} >
+              {this.props.endTurnMessage}
+            </button>
+            <br />
           </div>
         </>
       );
     }
 }
 
-export default Board;
+export default Console;

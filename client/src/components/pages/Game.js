@@ -184,7 +184,7 @@ class Game extends Component {
     get("api/startTurn").then((result) => {
       //console.log("^V^ startTurn result: "+JSON.stringify(result));
       this.setState({
-        dice: result.dice.total,
+        dice: ""+result.dice.die1+", "+result.dice.die1,
         canBuy: result.canBuy,
         mePlayer: result.player,
       })
@@ -218,40 +218,17 @@ class Game extends Component {
           timer={this.state.timer}
           hideMoreTime={!(this.state.mePlayer.isTurn)}
           requestMoreTimeCallback={this.requestMoreTime}
+          requestATurnCallback={this.requestTurn}
+          hideRequestATurn={!(this.state.gameStatus === "hold")}
+          buyAndEndTurnCallback={() => {this.endTurn(true);}}
+          hideBuyAndEndTurn={!(this.state.mePlayer.isTurn && this.state.mePlayer.didStartTurn && this.state.canBuy)}
+          endTurnCallback={() => {this.endTurn(false);}}
+          hideEndTurn={!(this.state.mePlayer.isTurn && this.state.mePlayer.didStartTurn)}
+          endTurnMessage={this.getEndTurnMessage()}
         />
-        <div
-          className="Profile-turnContainer"
-          onClick={() => { this.startTurn(); }}
-          hidden={!(this.state.mePlayer.isTurn && !this.state.mePlayer.didStartTurn)}
-        >
-          <div className={this.getTurnClassName()} />
-        </div>
-        <button
-          type="submit"
-          value="Submit"
-          onClick={this.requestTurn}
-          hidden={!(this.state.gameStatus === "hold")}
-        >
-          Request a Turn
-        </button>
-        <button
-          type="submit"
-          value="Submit"
-          onClick={() => {this.endTurn(true);}}
-          hidden={!(this.state.mePlayer.isTurn && this.state.mePlayer.didStartTurn && this.state.canBuy)}
-        >
-          Buy and End Turn
-        </button>
-        <button
-          type="submit"
-          value="Submit"
-          onClick={() => {this.endTurn(false);}}
-          hidden={!(this.state.mePlayer.isTurn && this.state.mePlayer.didStartTurn)}
-        >
-          {this.getEndTurnMessage()}
-        </button>
+        
 
-        <div className="u-flex">
+        <div className="u-flex" style={{height:"100px"}}>
           <div className="Profile-subContainer u-textCenter">
             <h4 className="Profile-subTitle">Your game stats:</h4>
             <div id="profile-description">
@@ -259,10 +236,20 @@ class Game extends Component {
               <p>You currenty have: ${this.state.mePlayer.money}</p>
             </div>
           </div>
-          <div className="Profile-subContainer u-textCenter">
-            <h4 className="Profile-subTitle">You rolled:</h4>
-            <Dice dice={this.state.dice} />
+          
+          <div className="Profile-subContainer u-textCenter" >
+            <div
+              className="Profile-turnContainer u-textCenter"
+              onClick={() => { this.startTurn(); }}
+              hidden={!(this.state.mePlayer.isTurn && !this.state.mePlayer.didStartTurn)} >
+              <div className={this.getTurnClassName()} />
+            </div>
+            <div className="u-textCenter"
+              hidden={(this.state.mePlayer.isTurn && !this.state.mePlayer.didStartTurn)} >
+              <h4 className="Profile-subTitle">You rolled: {this.state.dice}</h4>
+            </div>
           </div>
+
           <div className="Profile-subContainer u-textCenter">
             <h4 className="Profile-subTitle">Your current location:</h4>
             <div id="favorite-cat">{this.state.spaces.filter(s => s._id === this.state.mePlayer.location)
