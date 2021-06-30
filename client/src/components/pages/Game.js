@@ -173,8 +173,8 @@ class Game extends Component {
     // use callback to set user details in NavBar via App.js
     const userLocationHTML = this.state.spaces.filter(s => s._id === this.state.mePlayer.location).map((s) =>
       <span>
-        <span>{s._id + ". "}</span>
-        <span>{s.name}</span>
+        <span key={s._id}>{s._id + ". "}</span>
+        <span key={s.name}>{s.name}</span>
       </span>
       );
     this.props.setUserDetailsCallback(this.state.mePlayer.money, userLocationHTML);
